@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="num_accident_cards_per_deck">3</integer>
+    <integer name="num_out_of_gas_cards_per_deck">3</integer>
+    <integer name="num_flat_tire_cards_per_deck">3</integer>
+    <integer name="num_stop_cards_per_deck">5</integer>
+    <integer name="num_speed_limit_cards_per_deck">3</integer>
+    <integer name="num_repairs_cards_per_deck">6</integer>
+    <integer name="num_gasoline_cards_per_deck">6</integer>
+    <integer name="num_spare_tire_cards_per_deck">6</integer>
+    <integer name="num_roll_cards_per_deck">14</integer>
+    <integer name="num_end_of_limit_cards_per_deck">6</integer>
+    <integer name="num_driving_ace_cards_per_deck">1</integer>
+    <integer name="num_right_of_way_cards_per_deck">1</integer>
+    <integer name="num_puncture_proof_cards_per_deck">1</integer>
+    <integer name="num_extra_tank_cards_per_deck">1</integer>
+    <integer name="num_twenty_five_mile_cards_per_deck">10</integer>
+    <integer name="num_fifty_mile_cards_per_deck">10</integer>
+    <integer name="num_seventy_five_mile_cards_per_deck">10</integer>
+    <integer name="num_one_hundred_mile_cards_per_deck">12</integer>
+    <integer name="num_two_hundred_mile_cards_per_deck">10</integer>
+</resources>
