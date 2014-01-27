@@ -3,26 +3,26 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_centerInParent="true"
-    android:layout_centerHorizontal="true"
+    android:gravity="center"
     android:orientation="horizontal"
-    android:background="@android:color/transparent">
+    android:background="@android:color/transparent"
+    android:layout_marginTop="3dp">
 
     <GridLayout
         android:id="@+id/distance_piles"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginRight="10dp"
-        android:layout_marginTop="-13dp">
+        android:layout_marginTop="0dp">
 
-        <View
+        <RelativeLayout
             android:id="@+id/twenty_five_miles_pile"
             android:layout_column="1"
             android:layout_row="1"
             style="@style/CardPileArea"
             android:layout_marginRight="10dp"/>
 
-        <View
+        <RelativeLayout
             android:id="@+id/seventy_five_miles_pile"
             style="@style/CardPileArea"
             android:layout_column="1"
@@ -30,7 +30,7 @@
             android:layout_marginRight="10dp"
             android:layout_marginTop="-60dp"/>
 
-        <View
+        <RelativeLayout
             android:id="@+id/fifty_miles_pile"
             style="@style/CardPileArea"
             android:layout_columnSpan="2"
@@ -38,7 +38,7 @@
             android:layout_row="1"
             android:layout_marginRight="0dp"/>
 
-        <View
+        <RelativeLayout
             android:id="@+id/one_hundred_miles_pile"
             style="@style/CardPileArea"
             android:layout_column="2"
@@ -46,7 +46,7 @@
             android:layout_marginTop="-60dp"
             android:layout_marginRight="0dp"/>
 
-        <View
+        <RelativeLayout
             android:id="@+id/two_hundred_miles_pile"
             style="@style/CardPileArea"
             android:layout_columnSpan="2"
@@ -57,12 +57,12 @@
 
     </GridLayout>
 
-    <View
+    <RelativeLayout
         android:id="@+id/battle_pile"
         style="@style/CardPileArea"
         android:layout_marginRight="10dip"/>
 
-    <View
+    <RelativeLayout
         android:id="@+id/speed_pile"
         style="@style/CardPileArea"/>
 
@@ -70,36 +70,36 @@
         android:id="@+id/safety_pile"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="0dp">
+        android:layout_marginTop="5dp">
 
-        <View
+        <RelativeLayout
             android:id="@+id/safety_card_one"
             android:layout_column="1"
             android:layout_row="1"
             style="@style/CardPileArea"
             android:layout_marginRight="10dp"/>
 
-        <View
+        <RelativeLayout
             android:id="@+id/safety_card_two"
             style="@style/CardPileArea"
             android:layout_column="1"
             android:layout_row="2"
             android:layout_marginRight="10dp"
-            android:layout_marginTop="-48dp"/>
+            android:layout_marginTop="-53dp"/>
 
-        <View
+        <RelativeLayout
             android:id="@+id/safety_card_three"
             style="@style/CardPileArea"
             android:layout_column="2"
             android:layout_row="1"
             android:layout_marginRight="0dp"/>
 
-        <View
+        <RelativeLayout
             android:id="@+id/safety_card_four"
             style="@style/CardPileArea"
             android:layout_column="2"
             android:layout_row="2"
-            android:layout_marginTop="-48dp"
+            android:layout_marginTop="-53dp"
             android:layout_marginRight="0dp"/>
     </GridLayout>
 

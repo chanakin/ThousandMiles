@@ -15,7 +15,8 @@
         android:background="@android:color/holo_red_dark"
         android:padding="5dp"
         android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true">
+        android:layout_below="@+id/opponent_hand"
+        android:layout_marginTop="10dp" >
 
         <View
             android:id="@+id/discard_pile"

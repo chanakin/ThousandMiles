@@ -4,11 +4,17 @@ import com.chanakinllc.thousandmiles.util.SystemUiHider;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.net.Uri;
+import android.support.v4.app.Fragment;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+
+import java.util.ArrayList;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -16,7 +22,7 @@ import android.view.View;
  *
  * @see SystemUiHider
  */
-public class ThousandMilesMainMenu extends Activity {
+public class ThousandMilesMainMenu extends FragmentActivity implements MainMenuListFragment.MainMenuItemListener, GameBoardFragment.OnFragmentInteractionListener {
     /**
      * Whether or not the system UI should be auto-hidden after
      * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -39,6 +45,7 @@ public class ThousandMilesMainMenu extends Activity {
      * The flags to pass to {@link SystemUiHider#getInstance}.
      */
     private static final int HIDER_FLAGS = SystemUiHider.FLAG_HIDE_NAVIGATION;
+    public static final String MAIN_MENU_LIST_FRAGMENT = "mainMenuListFragment";
 
     /**
      * The instance of the {@link SystemUiHider} for this activity.
@@ -108,6 +115,15 @@ public class ThousandMilesMainMenu extends Activity {
             }
         });
 
+            ArrayList<String> listItemStrings = new ArrayList<String>();
+            listItemStrings.add("Play Game");
+            listItemStrings.add("Rules");
+            listItemStrings.add("High Scores");
+            listItemStrings.add("Settings");
+
+        MainMenuListFragment fragment = MainMenuListFragment.newInstance(listItemStrings);
+//            GameRulesFragment fragment = GameRulesFragment.newInstance("Chantell");
+        getSupportFragmentManager().beginTransaction().add(R.id.fullscreen_content, fragment, MAIN_MENU_LIST_FRAGMENT).commit();
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
@@ -155,5 +171,18 @@ public class ThousandMilesMainMenu extends Activity {
     private void delayedHide(int delayMillis) {
         mHideHandler.removeCallbacks(mHideRunnable);
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
+    }
+
+    @Override
+    public void onItemClicked(ThousandMilesMenuItem item) {
+        if("Play Game".equalsIgnoreCase(item.getItemText())) {
+            GameBoardFragment gbf = new GameBoardFragment();
+            getSupportFragmentManager().beginTransaction().add(gbf, "gameBoardFragment");
+        }
+    }
+
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+
     }
 }

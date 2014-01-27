@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0099cc"
+    android:background="#3C3C91"
     tools:context=".ThousandMilesMainMenu">
 
     <!-- The primary full-screen view. This can be replaced with whatever view
@@ -37,8 +37,7 @@
                 style="?buttonBarButtonStyle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/dummy_button" />
+                android:layout_weight="1" />
 
         </LinearLayout>
     </FrameLayout>
