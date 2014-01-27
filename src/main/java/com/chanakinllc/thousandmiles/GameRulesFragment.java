@@ -2,21 +2,27 @@ package com.chanakinllc.thousandmiles;
 
 import android.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.chanakinllc.thousandmiles.cards.Card;
+import com.chanakinllc.thousandmiles.cards.CardCategory;
 import com.chanakinllc.thousandmiles.cards.CardPile;
+import com.chanakinllc.thousandmiles.cards.CardType;
+import com.chanakinllc.thousandmiles.cards.safeties.SafetyCard;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 
 /**
  * Created by chan on 1/25/14.
  * MODEL for the game -- this is a headless fragment
  */
 public class GameRulesFragment extends Fragment {
-    private int playerTurn;
+    private Player currentPlayer;
 
     //Create an object of the deck class
     private Deck deck = new Deck();
@@ -32,16 +38,60 @@ public class GameRulesFragment extends Fragment {
     private int player1MileageTotal = 0;
     private int player2MileageTotal = 0;
 
+    private static final int MAX_PLAYERS = 4;
+    private static final String PLAYERS_LIST = "NumPlayers";
+
+    public static GameRulesFragment newInstance( String [] playerNames ) {
+        String [] players;
+
+        if( playerNames.length > MAX_PLAYERS ) {
+            players = new String[MAX_PLAYERS];
+
+            for( int i = 0; i < MAX_PLAYERS; i++ ) {
+                players[i] = playerNames[i];
+            }
+
+        }
+        else {
+            players = playerNames;
+        }
+
+        Bundle bundle = new Bundle();
+        bundle.putStringArray(PLAYERS_LIST, players);
+
+        GameRulesFragment fragment = new GameRulesFragment();
+        fragment.setArguments(bundle);
+        return fragment;
+    }
+
+    private GameRulesFragment() {
+
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        if( null != savedInstanceState ) {
+            String [] playerNames = savedInstanceState.getStringArray(PLAYERS_LIST);
+
+            if( null == playerNames ) {
+                Log.i("NO PLAYERS FOUND!", "PANIC PANIC PANIC, no players were found in saved instance state bundle");
+                return;
+            }
+
+            for( int i = 0; i < playerNames.length; i++ ) {
+                players.add(new Player(playerNames[i], i));
+            }
+        }
+
         setRetainInstance(true);
         //Start out selecting a player at random to begin the game
-        playerTurn = getRandomPlayerId();
+        currentPlayer = getRandomPlayer();
+
         super.onCreate(savedInstanceState);
     }
 
-    private int getRandomPlayerId() {
-        return players.get(0 + (int) (Math.random() * ((players.size()-1-0) + 1))).getId();
+    private Player getRandomPlayer() {
+        return players.get(0 + (int) (Math.random() * ((players.size()-1-0) + 1)));
     }
 
     @Override
@@ -53,918 +103,141 @@ public class GameRulesFragment extends Fragment {
      * Contains all the logic for game play. Receives card that has been played
      * and determines where it is to be placed based on the rules of the game.
      *
-     * @param cardId what card was played
-     * @param playerId which player played the card
-     * @param playedCard the card itself
+     * @param card what card was played
+     * @param playerKey which player the card was played upon
+     * @param opposingPlayerKey the card itself
      * @return String where to place the card
      */
-    public boolean validatePlay(Card card, int playerId, CardPile whichPile) {
-        if(playerTurn != playerId) {
+    public boolean validatePlay(Card card, int playerKey, int opposingPlayerKey, CardPile whichPile) {
+        Player cardPlayer = players.get(playerKey);
+        Player opposingPlayer = players.get(opposingPlayerKey);
+
+        if( null == cardPlayer || cardPlayer != currentPlayer ) {
             return false;
         }
 
-        switch(card.getCardCategory())
-        {
-
+        // Can't play a hazard card on yourself
+        if( card.getCardCategory() == CardCategory.HAZARD && null == opposingPlayer ) {
+            return false;
         }
 
 
-
-            if(cardId.equalsIgnoreCase("Gasoline") || cardId.equalsIgnoreCase("Stop")  || cardId.equalsIgnoreCase("SpareTire") ||
-                    cardId.equalsIgnoreCase("Repairs")) {
-                if(player1BattlePile.isEmpty()) {
-                    discardPile.add(playedCard);
-                    whichPile = "DiscardPile";
-                }
-                else {
-                    if(cardId.equalsIgnoreCase("Stop")) {
-                        if(player2RightOfWayInPlay == true) {
-                            discardPile.add(playedCard);
-                            whichPile = "DiscardPile";
-                        }
-                        else {
-                            if(player2BattlePile.isEmpty()) {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                            else {
-                                String topCard = player2BattlePile.get(player2BattlePile.size() - 1);
-                                if(!topCard.equalsIgnoreCase("Roll")) {
-                                    discardPile.add(playedCard);
-                                    whichPile = "DiscardPile";
-                                }
-                                else {
-                                    player2BattlePile.add(cardId);
-                                    whichPile = "OppBattlePile";
-                                }
-                            }
-                        }
-                    }
-                    else {
-                        String topCard = player1BattlePile.get(player1BattlePile.size() - 1);
-                        if(cardId.equalsIgnoreCase("Gasoline")) {
-                            if(!topCard.equalsIgnoreCase("OutOfGas")) {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                            else {
-                                player1BattlePile.add(cardId);
-                                whichPile = "MyBattlePile";
-                            }
-                        }
-                        else if(cardId.equalsIgnoreCase("Repairs")) {
-                            if(!topCard.equalsIgnoreCase("Accident"))                        {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                            else
-                            {
-                                player1BattlePile.add(cardId);
-                                whichPile = "MyBattlePile";
-                            }
-                        }
-                        else if(cardId.equalsIgnoreCase("SpareTire")) {
-                            if(!topCard.equalsIgnoreCase("FlatTire")) {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                            else {
-                                player1BattlePile.add(cardId);
-                                whichPile = "MyBattlePile";
-                            }
-                        }
-                    }
-                }
-            }
-            else if(cardId.equalsIgnoreCase("Accident") || cardId.equalsIgnoreCase("FlatTire") || cardId.equalsIgnoreCase("OutOfGas")) {
-
-                if(player2BattlePile.isEmpty()) {
-                    if(player2RightOfWayInPlay == false) {
-                        discardPile.add(playedCard);
-                        whichPile = "DiscardPile";
-                    }
-                    else {
-                        if(cardId.equalsIgnoreCase("Accident") && player2DrivingAceInPlay == true) {
-                            discardPile.add(playedCard);
-                            whichPile = "DiscardPile";
-                        }
-                        else if(cardId.equalsIgnoreCase("FlatTire") && player2PunctureProofInPlay == true) {
-                            discardPile.add(playedCard);
-                            whichPile = "DiscardPile";
-                        }
-                        else if(cardId.equalsIgnoreCase("OutOfGas") && player2ExtraTankInPlay == true) {
-                            discardPile.add(playedCard);
-                            whichPile = "DiscardPile";
-                        }
-                        else {
-                            player2BattlePile.add(cardId);
-                            whichPile = "OppBattlePile";
-                        }
-                    }
-                }
-                else {
-                    String topCard = player2BattlePile.get(player2BattlePile.size() - 1);
-
-                    if(player2RightOfWayInPlay == false) {
-                        if(!topCard.equalsIgnoreCase("Roll")){
-                            discardPile.add(playedCard);
-                            whichPile = "DiscardPile";
-                        }
-                        else {
-                            if(cardId.equalsIgnoreCase("Accident") && player2DrivingAceInPlay == true) {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                            else if(cardId.equalsIgnoreCase("FlatTire") && player2PunctureProofInPlay == true) {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                            else if(cardId.equalsIgnoreCase("OutOfGas") && player2ExtraTankInPlay == true) {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                            else {
-                                player2BattlePile.add(cardId);
-                                whichPile = "OppBattlePile";
-                            }
-                        }
-                    }
-                    else {
-                        if(topCard.equalsIgnoreCase("SpareTire") || topCard.equalsIgnoreCase("Gasoline") || topCard.equalsIgnoreCase("SpareTire") |
-                                topCard.equalsIgnoreCase("Roll")) {
-                            if(cardId.equalsIgnoreCase("Accident") && player2DrivingAceInPlay == true) {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                            else if(cardId.equalsIgnoreCase("FlatTire") && player2PunctureProofInPlay == true) {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                            else if(cardId.equalsIgnoreCase("OutOfGas") && player2ExtraTankInPlay == true) {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                            else {
-                                player2BattlePile.add(cardId);
-                                whichPile = "OppBattlePile";
-                            }
-                        }
-                        else {
-                            if(topCard.equalsIgnoreCase("Accident") && player1DrivingAceInPlay == true) {
-                                player1BattlePile.add(cardId);
-                                whichPile = "OppBattlePile";
-                            }
-                            else if(topCard.equalsIgnoreCase("OutOfGas") && player1ExtraTankInPlay == true) {
-                                player1BattlePile.add(cardId);
-                                whichPile = "OppBattlePile";
-                            }
-                            else if(topCard.equalsIgnoreCase("FlatTire") && player1PunctureProofInPlay == true) {
-                                player1BattlePile.add(cardId);
-                                whichPile = "OppBattlePile";
-                            }
-                            else {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                        }
-                    }
-                }
-            }
-            else if(cardId.equalsIgnoreCase("25miles") || cardId.equalsIgnoreCase("50miles")) {
-                int endOfMilesSpecified = cardId.indexOf('m');
-                String miles = cardId.substring(0,endOfMilesSpecified);
-                if(player1BattlePile.isEmpty()) {
-                    if(player1RightOfWayInPlay == false) {
-                        discardPile.add(playedCard);
-                        whichPile = "DiscardPile";
-                    }
-                    else {
-                        int milesRolled = Integer.parseInt(miles);
-                        player1MileageTotal = player1MileageTotal + milesRolled;
-                        whichPile = (String)cardId.concat("Pile");;
-                    }
-                }
-                else {
-                    String topCard = player1BattlePile.get(player1BattlePile.size() - 1);
-                    if(player1RightOfWayInPlay == true) {
-                        if(topCard.equalsIgnoreCase("SpareTire") || topCard.equalsIgnoreCase("Gasoline") || topCard.equalsIgnoreCase("Repairs") |
-                                topCard.equalsIgnoreCase("Roll")) {
-                            int milesRolled = Integer.parseInt(miles);
-                            player1MileageTotal = player1MileageTotal + milesRolled;
-                            whichPile = (String)cardId.concat("Pile");;
-                        }
-                        else if(topCard.equalsIgnoreCase("Accident")) {
-                            if(player1DrivingAceInPlay == true) {
-                                int milesRolled = Integer.parseInt(miles);
-                                player1MileageTotal = player1MileageTotal + milesRolled;
-                                whichPile = (String)cardId.concat("Pile");;
-                            }
-                            else {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                        }
-                        else if(topCard.equalsIgnoreCase("OutOfGas")) {
-                            if(player1ExtraTankInPlay == true) {
-                                int milesRolled = Integer.parseInt(miles);
-                                player1MileageTotal = player1MileageTotal + milesRolled;
-                                whichPile = (String)cardId.concat("Pile");;
-                            }
-                            else {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                        }
-                        else if(topCard.equalsIgnoreCase("FlatTire")) {
-                            if(player1PunctureProofInPlay == true) {
-                                int milesRolled = Integer.parseInt(miles);
-                                player1MileageTotal = player1MileageTotal + milesRolled;
-                                whichPile = (String)cardId.concat("Pile");;
-                            }
-                            else {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                        }
-                        else {
-                            discardPile.add(playedCard);
-                            whichPile = "DiscardPile";
-                        }
-                    }
-                    else {
-                        if(!topCard.equalsIgnoreCase("Roll")) {
-                            discardPile.add(playedCard);
-                            whichPile = "DiscardPile";
-                        }
-                        else {
-                            int milesRolled = Integer.parseInt(miles);
-                            player1MileageTotal = player1MileageTotal + milesRolled;
-                            whichPile = (String)cardId.concat("Pile");;
-                        }
-                    }
-                }
-            }
-            else if(cardId.equalsIgnoreCase("75miles") || cardId.equalsIgnoreCase("100miles") || cardId.equalsIgnoreCase("200miles")) {
-                int endOfMilesSpecified = cardId.indexOf('m');
-                String miles = cardId.substring(0,endOfMilesSpecified);
-                if(player1BattlePile.isEmpty()) {
-                    if(player1RightOfWayInPlay == false) {
-                        discardPile.add(playedCard);
-                        whichPile = "DiscardPile";
-                    }
-                    else {
-                        int milesRolled = Integer.parseInt(miles);
-                        player1MileageTotal = player1MileageTotal + milesRolled;
-                        whichPile = (String)cardId.concat("Pile");;
-                    }
-                }
-                else {
-                    String topCard = player1BattlePile.get(player1BattlePile.size() - 1);
-                    if(player1RightOfWayInPlay == true) {
-                        if(topCard.equalsIgnoreCase("SpareTire") || topCard.equalsIgnoreCase("Gasoline") || topCard.equalsIgnoreCase("SpareTire") |
-                                topCard.equalsIgnoreCase("Roll") || topCard.equalsIgnoreCase("Stop")) {
-                            int milesRolled = Integer.parseInt(miles);
-                            player1MileageTotal = player1MileageTotal + milesRolled;
-                            whichPile = (String)cardId.concat("Pile");;
-                        }
-                        else if(topCard.equalsIgnoreCase("Accident")) {
-                            if(player1DrivingAceInPlay == true) {
-                                int milesRolled = Integer.parseInt(miles);
-                                player1MileageTotal = player1MileageTotal + milesRolled;
-                                whichPile = (String)cardId.concat("Pile");;
-                            }
-                            else {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                        }
-                        else if(topCard.equalsIgnoreCase("OutOfGas")) {
-                            if(player1ExtraTankInPlay == true) {
-                                int milesRolled = Integer.parseInt(miles);
-                                player1MileageTotal = player1MileageTotal + milesRolled;
-                                whichPile = (String)cardId.concat("Pile");;
-                            }
-                            else {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                        }
-                        else if(topCard.equalsIgnoreCase("FlatTire")) {
-                            if(player1PunctureProofInPlay == true) {
-                                int milesRolled = Integer.parseInt(miles);
-                                player1MileageTotal = player1MileageTotal + milesRolled;
-                                whichPile = (String)cardId.concat("Pile");;
-                            }
-                            else {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                        }
-                        else {
-                            discardPile.add(playedCard);
-                            whichPile = "DiscardPile";
-                        }
-                    }
-                    else {
-                        if(topCard.equalsIgnoreCase("Roll")) {
-
-                            if(player1SpeedPile.isEmpty()) {
-                                int milesRolled = Integer.parseInt(miles);
-                                player1MileageTotal = player1MileageTotal + milesRolled;
-                                whichPile = cardId.concat("Pile");;
-                            }
-                            else {
-                                String topSpeedCard = player1SpeedPile.get(player1SpeedPile.size() - 1);
-                                if(topSpeedCard.equalsIgnoreCase("EndOfLimit")) {
-                                    int milesRolled = Integer.parseInt(miles);
-                                    player1MileageTotal = player1MileageTotal + milesRolled;
-                                    whichPile = cardId.concat("Pile");;
-                                }
-                                else {
-                                    discardPile.add(playedCard);
-                                    whichPile = "DiscardPile";
-                                }
-                            }
-                        }
-                        else {
-                            discardPile.add(playedCard);
-                            whichPile = "DiscardPile";
-                        }
-                    }
-                }
-            }
-            else if(cardId.equalsIgnoreCase("Roll")) {
-                if(player1BattlePile.isEmpty()) {
-                    if(player1RightOfWayInPlay == true) {
-                        discardPile.add(playedCard);
-                        whichPile = "DiscardPile";
-                    }
-                    else {
-                        player1BattlePile.add(cardId);
-                        whichPile = "MyBattlePile";
-                    }
-                }
-                else {
-                    if(player1RightOfWayInPlay== true) {
-                        discardPile.add(playedCard);
-                        whichPile = "DiscardPile";
-                    }
-                    else {
-                        String topCard = player1BattlePile.get(player1BattlePile.size() - 1);
-                        if(topCard.equalsIgnoreCase("Repairs") || topCard.equalsIgnoreCase("Gasoline") || topCard.equalsIgnoreCase("SpareTire") || topCard.equalsIgnoreCase("Stop")) {
-                            player1BattlePile.add(cardId);
-                            whichPile = "MyBattlePile";
-                        }
-                        else if(topCard.equalsIgnoreCase("Accident")) {
-                            if(player1DrivingAceInPlay == true) {
-                                player1BattlePile.add(cardId);
-                                whichPile = "MyBattlePile";
-                            }
-                            else {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                        }
-                        else if(topCard.equalsIgnoreCase("OutOfGas")) {
-                            if(player1ExtraTankInPlay == true) {
-                                player1BattlePile.add(cardId);
-                                whichPile = "MyBattlePile";
-                            }
-                            else {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                        }
-                        else if(topCard.equalsIgnoreCase("FlatTire")) {
-                            if(player1PunctureProofInPlay == true) {
-                                player1BattlePile.add(cardId);
-                                whichPile = "MyBattlePile";
-                            }
-                            else {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                        }
-                        else {
-                            discardPile.add(playedCard);
-                            whichPile = "DiscardPile";
-                        }
-                    }
-                }
-            }
-            else if(cardId.equalsIgnoreCase("RightOfWay") || cardId.equalsIgnoreCase("PunctureProof") ||
-                    cardId.equalsIgnoreCase("ExtraTank") || cardId.equalsIgnoreCase("DrivingAce")) {
-                if(cardId.equalsIgnoreCase("RightOfWay")) {
-                    player1RightOfWayInPlay = true;
-                }
-                else if(cardId.equalsIgnoreCase("PunctureProof")) {
-                    player1PunctureProofInPlay = true;
-                }
-                else if(cardId.equalsIgnoreCase("ExtraTank")) {
-                    player1ExtraTankInPlay = true;
-                }
-                else if(cardId.equalsIgnoreCase("DrivingAce")) {
-                    player1DrivingAceInPlay = true;
-                }
-                whichPile = "SafetyPile";
-            }
-            else if(cardId.equalsIgnoreCase("EndOfLimit")) {
-                if(player1RightOfWayInPlay == true) {
-                    discardPile.add(playedCard);
-                    whichPile = "DiscardPile";
-                }
-                else {
-                    if(player1SpeedPile.isEmpty()) {
-                        discardPile.add(playedCard);
-                        whichPile = "DiscardPile";
-                    }
-                    else {
-                        String topCard = player1SpeedPile.get(player1SpeedPile.size() - 1);
-                        if(topCard.equalsIgnoreCase("SpeedLimit")) {
-                            player1SpeedPile.add(cardId);
-                            whichPile = "MySpeedPile";
-                        }
-                        else {
-                            discardPile.add(playedCard);
-                            whichPile = "DiscardPile";
-                        }
-
-                    }
-                }
-            }
-            else if(cardId.equalsIgnoreCase("SpeedLimit")) {
-                if(player2RightOfWayInPlay == true) {
-                    discardPile.add(playedCard);
-                    whichPile = "DiscardPile";
-                }
-                else {
-                    if(player2SpeedPile.isEmpty()) {
-                        player2SpeedPile.add(cardId);
-                        whichPile = "OppSpeedPile";
-                    }
-                    else {
-                        String topCard = player2SpeedPile.get(player2SpeedPile.size() - 1);
-                        if(topCard.equalsIgnoreCase("EndOfLimit")) {
-                            player2SpeedPile.add(cardId);
-                            whichPile = "OppSpeedPile";
-                        }
-                        else {
-                            discardPile.add(playedCard);
-                            whichPile = "DiscardPile";
-                        }
-
-
-                    }
-                }
-            }
+        //It's always okay to discard any card
+        if( whichPile == CardPile.DISCARD ) {
+            cardPlayer.setPlayedCard(card);
+            return true;
         }
-        else if(playerId == 1) {
-            if(cardId.equalsIgnoreCase("Gasoline") || cardId.equalsIgnoreCase("Stop")  || cardId.equalsIgnoreCase("SpareTire") ||
-                    cardId.equalsIgnoreCase("Repairs")) {
-                if(player2BattlePile.isEmpty()) {
-                    discardPile.add(playedCard);
-                    whichPile = "DiscardPile";
-                }
-                else {
-                    if(cardId.equalsIgnoreCase("Stop")) {
-                        if(player1RightOfWayInPlay == true) {
-                            discardPile.add(playedCard);
-                            whichPile = "DiscardPile";
-                        }
-                        else {
-                            if(player1BattlePile.isEmpty()) {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                            else {
-                                String topCard = player1BattlePile.get(player1BattlePile.size() - 1);
-                                if(!topCard.equalsIgnoreCase("Roll")) {
-                                    discardPile.add(playedCard);
-                                    whichPile = "DiscardPile";
-                                }
-                                else {
-                                    player1BattlePile.add(cardId);
-                                    whichPile = "OppBattlePile";
-                                }
-                            }
-                        }
-                    }
-                    else {
-                        String topCard = player2BattlePile.get(player2BattlePile.size() - 1);
-                        if(cardId.equalsIgnoreCase("Gasoline")) {
-                            if(!topCard.equalsIgnoreCase("OutOfGas")) {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                            else {
-                                player2BattlePile.add(cardId);
-                                whichPile = "MyBattlePile";
-                            }
-                        }
-                        else if(cardId.equalsIgnoreCase("Repairs")) {
-                            if(!topCard.equalsIgnoreCase("Accident")) {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                            else {
-                                player2BattlePile.add(cardId);
-                                whichPile = "MyBattlePile";
-                            }
-                        }
-                        else if(cardId.equalsIgnoreCase("SpareTire")) {
-                            if(!topCard.equalsIgnoreCase("FlatTire")) {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                            else {
-                                player2BattlePile.add(cardId);
-                                whichPile = "MyBattlePile";
-                            }
-                        }
-                    }
-                }
-            }
-            else if(cardId.equalsIgnoreCase("Accident") || cardId.equalsIgnoreCase("FlatTire") || cardId.equalsIgnoreCase("OutOfGas")) {
-                if(player1BattlePile.isEmpty()) {
-                    if(player1RightOfWayInPlay == false) {
-                        discardPile.add(playedCard);
-                        whichPile = "DiscardPile";
-                    }
-                    else {
-                        if(cardId.equalsIgnoreCase("Accident") && player1DrivingAceInPlay == true) {
-                            discardPile.add(playedCard);
-                            whichPile = "DiscardPile";
-                        }
-                        else if(cardId.equalsIgnoreCase("FlatTire") && player1PunctureProofInPlay == true) {
-                            discardPile.add(playedCard);
-                            whichPile = "DiscardPile";
-                        }
-                        else if(cardId.equalsIgnoreCase("OutOfGas") && player1ExtraTankInPlay == true) {
-                            discardPile.add(playedCard);
-                            whichPile = "DiscardPile";
-                        }
-                        else {
-                            player1BattlePile.add(cardId);
-                            whichPile = "OppBattlePile";
-                        }
-                    }
-                }
-                else if(!player1BattlePile.isEmpty()) {
-                    String topCard = player1BattlePile.get(player1BattlePile.size() - 1);
-                    if(player1RightOfWayInPlay == false) {
-                        if(!topCard.equalsIgnoreCase("Roll")){
-                            discardPile.add(playedCard);
-                            whichPile = "DiscardPile";
-                        }
-                        else {
-                            if(cardId.equalsIgnoreCase("Accident") && player1DrivingAceInPlay == true) {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                            else if(cardId.equalsIgnoreCase("FlatTire") && player1PunctureProofInPlay == true) {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                            else if(cardId.equalsIgnoreCase("OutOfGas") && player1ExtraTankInPlay == true) {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                            else {
-                                player1BattlePile.add(cardId);
-                                whichPile = "OppBattlePile";
-                            }
-                        }
-                    }
-                    else {
-                        if(topCard.equalsIgnoreCase("SpareTire") || topCard.equalsIgnoreCase("Gasoline") || topCard.equalsIgnoreCase("SpareTire") |
-                                topCard.equalsIgnoreCase("Roll")) {
-                            if(cardId.equalsIgnoreCase("Accident") && player1DrivingAceInPlay == true) {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                            else if(cardId.equalsIgnoreCase("FlatTire") && player1PunctureProofInPlay == true) {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                            else if(cardId.equalsIgnoreCase("OutOfGas") && player1ExtraTankInPlay == true) {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                            else {
-                                player1BattlePile.add(cardId);
-                                whichPile = "OppBattlePile";
-                            }
-                        }
-                        else {
-                            if(topCard.equalsIgnoreCase("Accident") && player1DrivingAceInPlay == true) {
-                                player1BattlePile.add(cardId);
-                                whichPile = "OppBattlePile";
-                            }
-                            else if(topCard.equalsIgnoreCase("OutOfGas") && player1ExtraTankInPlay == true) {
-                                player1BattlePile.add(cardId);
-                                whichPile = "OppBattlePile";
-                            }
-                            else if(topCard.equalsIgnoreCase("FlatTire") && player1PunctureProofInPlay == true) {
-                                player1BattlePile.add(cardId);
-                                whichPile = "OppBattlePile";
-                            }
-                            else {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                        }
-                    }
-                }
-            }
-            else if(cardId.equalsIgnoreCase("25miles") || cardId.equalsIgnoreCase("50miles")) {
-                int endOfMilesSpecified = cardId.indexOf('m');
-                String miles = cardId.substring(0,endOfMilesSpecified);
-                if(player2BattlePile.isEmpty()) {
-                    if(player2RightOfWayInPlay == false) {
-                        discardPile.add(playedCard);
-                        whichPile = "DiscardPile";
-                    }
-                    else {
-                        int milesRolled = Integer.parseInt(miles);
-                        player2MileageTotal = player2MileageTotal + milesRolled;
-                        whichPile = cardId.concat("Pile");
-                    }
-                }
-                else {
-                    String topCard = player2BattlePile.get(player2BattlePile.size() - 1);
-                    if(player2RightOfWayInPlay == true) {
-                        if(topCard.equalsIgnoreCase("SpareTire") || topCard.equalsIgnoreCase("Gasoline") || topCard.equalsIgnoreCase("SpareTire") |
-                                topCard.equalsIgnoreCase("Roll") || topCard.equalsIgnoreCase("Stop")) {
-                            int milesRolled = Integer.parseInt(miles);
-                            player2MileageTotal = player2MileageTotal + milesRolled;
-                            whichPile = cardId.concat("Pile");;
-                        }
-                        else if(topCard.equalsIgnoreCase("Accident")) {
-                            if(player1DrivingAceInPlay == true) {
-                                int milesRolled = Integer.parseInt(miles);
-                                player2MileageTotal = player2MileageTotal + milesRolled;
-                                whichPile = cardId.concat("Pile");;
-                            }
-                            else {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                        }
-                        else if(topCard.equalsIgnoreCase("OutOfGas")) {
-                            if(player1ExtraTankInPlay == true) {
-                                int milesRolled = Integer.parseInt(miles);
-                                player2MileageTotal = player2MileageTotal + milesRolled;
-                                whichPile = cardId.concat("Pile");;
-                            }
-                            else {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                        }
-                        else if(topCard.equalsIgnoreCase("FlatTire")) {
-                            if(player1PunctureProofInPlay == true) {
-                                int milesRolled = Integer.parseInt(miles);
-                                player2MileageTotal = player2MileageTotal + milesRolled;
-                                whichPile = cardId.concat("Pile");;
-                            }
-                            else {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                        }
-                        else {
-                            discardPile.add(playedCard);
-                            whichPile = "DiscardPile";
-                        }
-                    }
-                    else {
-                        if(!topCard.equalsIgnoreCase("Roll")) {
-                            discardPile.add(playedCard);
-                            whichPile = "DiscardPile";
-                        }
-                        else {
-                            int milesRolled = Integer.parseInt(miles);
-                            player2MileageTotal = player2MileageTotal + milesRolled;
-                            whichPile = cardId.concat("Pile");;
-                        }
-                    }
-                }
-            }
-            else if(cardId.equalsIgnoreCase("75miles") || cardId.equalsIgnoreCase("100miles") || cardId.equalsIgnoreCase("200miles")) {
-                int endOfMilesSpecified = cardId.indexOf('m');
-                String miles = cardId.substring(0,endOfMilesSpecified);
-                if(player2BattlePile.isEmpty()) {
-                    if(player2RightOfWayInPlay == false) {
-                        discardPile.add(playedCard);
-                        whichPile = "DiscardPile";
-                    }
-                    else {
-                        int milesRolled = Integer.parseInt(miles);
-                        player2MileageTotal = player2MileageTotal + milesRolled;
-                        whichPile = cardId.concat("Pile");;
-                    }
-                }
-                else {
-                    String topCard = player2BattlePile.get(player2BattlePile.size() - 1);
-                    if(player2RightOfWayInPlay == true) {
-                        if(topCard.equalsIgnoreCase("SpareTire") || topCard.equalsIgnoreCase("Gasoline") || topCard.equalsIgnoreCase("SpareTire") |
-                                topCard.equalsIgnoreCase("Roll") || topCard.equalsIgnoreCase("Stop")) {
-                            int milesRolled = Integer.parseInt(miles);
-                            player2MileageTotal = player2MileageTotal + milesRolled;
-                            whichPile = cardId.concat("Pile");;
-                        }
-                        else if(topCard.equalsIgnoreCase("Accident")) {
-                            if(player1DrivingAceInPlay == true) {
-                                int milesRolled = Integer.parseInt(miles);
-                                player2MileageTotal = player2MileageTotal + milesRolled;
-                                whichPile = cardId.concat("Pile");;
-                            }
-                            else {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                        }
-                        else if(topCard.equalsIgnoreCase("OutOfGas")) {
-                            if(player1ExtraTankInPlay == true) {
-                                int milesRolled = Integer.parseInt(miles);
-                                player2MileageTotal = player2MileageTotal + milesRolled;
-                                whichPile = cardId.concat("Pile");;
-                            }
-                            else {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                        }
-                        else if(topCard.equalsIgnoreCase("FlatTire")) {
-                            if(player1PunctureProofInPlay == true) {
-                                int milesRolled = Integer.parseInt(miles);
-                                player2MileageTotal = player2MileageTotal + milesRolled;
-                                whichPile = cardId.concat("Pile");;
-                            }
-                            else {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                        }
-                        else {
-                            discardPile.add(playedCard);
-                            whichPile = "DiscardPile";
-                        }
-
-                    }
-                    else {
-                        if(topCard.equalsIgnoreCase("Roll")) {
-
-                            if(player2SpeedPile.isEmpty()) {
-                                int milesRolled = Integer.parseInt(miles);
-                                player2MileageTotal = player2MileageTotal + milesRolled;
-                                whichPile = cardId.concat("Pile");;
-                            }
-                            else {
-                                String topSpeedCard = player2SpeedPile.get(player2SpeedPile.size() - 1);
-                                if(topSpeedCard.equalsIgnoreCase("EndOfLimit")) {
-                                    int milesRolled = Integer.parseInt(miles);
-                                    player2MileageTotal = player2MileageTotal + milesRolled;
-                                    whichPile = cardId.concat("Pile");;
-                                }
-                                else {
-                                    discardPile.add(playedCard);
-                                    whichPile = "DiscardPile";
-                                }
-                            }
-                        }
-                        else {
-                            discardPile.add(playedCard);
-                            whichPile = "DiscardPile";
-                        }
-                    }
-                }
-
-            }
-            else if(cardId.equalsIgnoreCase("Roll")) {
-                if(player2BattlePile.isEmpty()) {
-                    if(player2RightOfWayInPlay == true) {
-                        discardPile.add(playedCard);
-                        whichPile = "DiscardPile";
-                    }
-                    else {
-                        player2BattlePile.add(cardId);
-                        whichPile = "MyBattlePile";
-                    }
-                }
-                else {
-                    if(player2RightOfWayInPlay== true) {
-                        discardPile.add(playedCard);
-                        whichPile = "DiscardPile";
-                    }
-                    else {
-                        String topCard = player2BattlePile.get(player2BattlePile.size() - 1);
-                        if(topCard.equalsIgnoreCase("Repairs") || topCard.equalsIgnoreCase("Gasoline") || topCard.equalsIgnoreCase("SpareTire") || topCard.equalsIgnoreCase("Stop")) {
-                            player2BattlePile.add(cardId);
-                            whichPile = "MyBattlePile";
-                        }
-                        else if(topCard.equalsIgnoreCase("Accident")) {
-                            if(player2DrivingAceInPlay == true) {
-                                player2BattlePile.add(cardId);
-                                whichPile = "MyBattlePile";
-                            }
-                            else {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                        }
-                        else if(topCard.equalsIgnoreCase("OutOfGas")) {
-                            if(player2ExtraTankInPlay == true) {
-                                player2BattlePile.add(cardId);
-                                whichPile = "MyBattlePile";
-                            }
-                            else {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                        }
-                        else if(topCard.equalsIgnoreCase("FlatTire")) {
-                            if(player2PunctureProofInPlay == true) {
-                                player2BattlePile.add(cardId);
-                                whichPile = "MyBattlePile";
-                            }
-                            else {
-                                discardPile.add(playedCard);
-                                whichPile = "DiscardPile";
-                            }
-                        }
-                        else {
-                            discardPile.add(playedCard);
-                            whichPile = "DiscardPile";
-                        }
-                    }
-                }
-            }
-            else if(cardId.equalsIgnoreCase("RightOfWay") || cardId.equalsIgnoreCase("PunctureProof") ||
-                    cardId.equalsIgnoreCase("ExtraTank") || cardId.equalsIgnoreCase("DrivingAce")) {
-                if(cardId.equalsIgnoreCase("RightOfWay")) {
-                    player2RightOfWayInPlay = true;
-                }
-                else if(cardId.equalsIgnoreCase("PunctureProof")) {
-                    player2PunctureProofInPlay = true;
-                }
-                else if(cardId.equalsIgnoreCase("ExtraTank")) {
-                    player2ExtraTankInPlay = true;
-                }
-                else if(cardId.equalsIgnoreCase("DrivingAce")) {
-                    player2DrivingAceInPlay = true;
-                }
-                whichPile = "SafetyPile";
-            }
-            else if(cardId.equalsIgnoreCase("EndOfLimit")) {
-                if(player2RightOfWayInPlay == true) {
-                    discardPile.add(playedCard);
-                    whichPile = "DiscardPile";
-                }
-                else {
-                    if(player2SpeedPile.isEmpty()) {
-                        discardPile.add(playedCard);
-                        whichPile = "DiscardPile";
-                    }
-                    else {
-                        String topCard = player2SpeedPile.get(player2SpeedPile.size() - 1);
-                        if(topCard.equalsIgnoreCase("SpeedLimit")) {
-                            player2SpeedPile.add(cardId);
-                            whichPile = "MySpeedPile";
-                        }
-                        else {
-                            discardPile.add(playedCard);
-                            whichPile = "DiscardPile";
-                        }
-
-                    }
-                }
-            }
-            else if(cardId.equalsIgnoreCase("SpeedLimit")) {
-                if(player1RightOfWayInPlay == true) {
-                    discardPile.add(playedCard);
-                    whichPile = "DiscardPile";
-                }
-                else {
-                    if(player1SpeedPile.isEmpty()) {
-                        player1SpeedPile.add(cardId);
-                        whichPile = "OppSpeedPile";
-                    }
-                    else {
-                        String topCard = player1SpeedPile.get(player1SpeedPile.size() - 1);
-                        if(topCard.equalsIgnoreCase("EndOfLimit")) {
-                            player1SpeedPile.add(cardId);
-                            whichPile = "OppSpeedPile";
-                        }
-                        else {
-                            discardPile.add(playedCard);
-                            whichPile = "DiscardPile";
-                        }
-                    }
-                }
-            }
+        else if( whichPile != card.getPileType() ) {
+            return false;
         }
-        return whichPile;
+
+        switch( card.getCardCategory() ) {
+
+            case HAZARD:
+                //First check that no safeties are in play that do not allow this hazard to be played
+                for( SafetyCard safetyCard : cardPlayer.getSafetyCardsInPlay().values() ) {
+                    for( CardType preventedCardTypes : safetyCard.getCardTypesPrevented() ) {
+                        if( preventedCardTypes == card.getCardType() ) {
+                            return false;
+                        }
+                    }
+                }
+
+                // Then check if the card on the pile is one that this card can play on
+                for( CardType cardTypePlayableUpon : card.getCardTypesThatArePlayableOn() ) {
+                    CardType topOfPileCardTypeAfterSafety;
+//
+//                    if( cardPlayer.peekAtPile( CardPile.BATTLE ).getCardCategory() == CardCategory.REMEDY &&  )
+                    if( cardPlayer.peekAtPile( CardPile.BATTLE ).getCardType() == cardTypePlayableUpon ) {
+                        return true;
+                    }
+                }
+
+                break;
+            case REMEDY:
+                if( CardCategory.HAZARD == cardPlayer.peekAtPile(CardPile.BATTLE).getCardCategory() ) {
+
+                }
+
+                break;
+            case DISTANCE:
+                break;
+            case SAFETY:
+                break;
+        }
+
+        switch( card.getCardType() ) {
+
+            case ACCIDENT:
+            case OUT_OF_GAS:
+            case FLAT_TIRE:
+            case STOP:
+
+                break;
+            case SPEED_LIMIT:
+                break;
+            case REPAIRS:
+                break;
+            case GASOLINE:
+                break;
+            case SPARE_TIRE:
+                break;
+            case ROLL:
+                break;
+            case END_OF_LIMIT:
+                break;
+            case DRIVING_ACE:
+                break;
+            case EXTRA_TANK:
+                break;
+            case PUNCTURE_PROOF:
+                break;
+            case RIGHT_OF_WAY:
+                break;
+            case TWENTY_FIVE_MILES:
+            case FIFTY_MILES:
+
+                switch( cardPlayer.peekAtPile(CardPile.BATTLE).getCardType() ) {
+                    case ACCIDENT:
+                    case OUT_OF_GAS:
+                    case FLAT_TIRE:
+                    case STOP:
+
+
+                        break;
+                    case REPAIRS:
+                    case GASOLINE:
+                    case SPARE_TIRE:
+//                        if( )
+                        break;
+                    case ROLL:
+                        cardPlayer.setPlayedCard(card);
+                        return true;
+                }
+                break;
+            case SEVENTY_FIVE_MILES:
+                break;
+            case ONE_HUNDRED_MILES:
+                break;
+            case TWO_HUNDRED_MILES:
+                break;
+        }
+
+        Card cardOnPile = cardPlayer.peekAtPile(card.getPileType());
+
+        ArrayList<CardType> playableCardTypes = new ArrayList<CardType>( Arrays.asList(card.getCardTypesThatArePlayableOn()));
+
+
+//for( CardType playableCardType : card.getCardTypesThatArePlayableOn() ) {
+//            if( playableCardType == cardOnPile.getCardType() ) {
+//                return true;
+//            }
+//        }
+//
+//        if( card.getCardCategory() == CardCategory.HAZARD ) {
+//
+//        }
+        return true;
     }
     /**
      * Shuffles the deck and receives the cards to be dealt.
@@ -973,47 +246,48 @@ public class GameRulesFragment extends Fragment {
      * @return a ArrayList of cards based on which player the server
      * requests the hand for.
      */
-    public ArrayList getHand(int playerId) {
+//    public ArrayList getHand(int playerId) {
+//
+//        //Shuffle the deck
+//        deck.shuffle();
+//
+//        //Receive the cards to be dealt
+//        handsToDeal = deck.dealHand();
+//
+//        //Used to alternate cards being dealt so that each player
+//        //receives every other card
+//        int cardCount = 0;
+//
+//        Iterator it = handsToDeal.iterator();
+//
+//        while(it.hasNext()){
+//            if(cardCount%2 == 0) {
+//                player1Hand.add((JRadioButton)it.next());
+//            }
+//            else {
+//                player2Hand.add((JRadioButton)it.next());
+//            }
+//            cardCount++;
+//        }
+//        handsToDeal.clear();//remove all the cards from the ArrayList
+//
+//        //Return the hands
+//        if(playerId == 0) {
+//            return player1Hand;
+//        }
+//        else {
+//            return player2Hand;
+//        }
+//    }
+//    /**
+//     * Returns a single card to be dealt to the player
+//     * at the start of their turn.
+//     * @return dealt card
+//     */
+//    public JRadioButton getDealtCard() {
+//        return deck.drawCard();
+//    }
 
-        //Shuffle the deck
-        deck.shuffle();
-
-        //Receive the cards to be dealt
-        handsToDeal = deck.dealHand();
-
-        //Used to alternate cards being dealt so that each player
-        //receives every other card
-        int cardCount = 0;
-
-        Iterator it = handsToDeal.iterator();
-
-        while(it.hasNext()){
-            if(cardCount%2 == 0) {
-                player1Hand.add((JRadioButton)it.next());
-            }
-            else {
-                player2Hand.add((JRadioButton)it.next());
-            }
-            cardCount++;
-        }
-        handsToDeal.clear();//remove all the cards from the ArrayList
-
-        //Return the hands
-        if(playerId == 0) {
-            return player1Hand;
-        }
-        else {
-            return player2Hand;
-        }
-    }
-    /**
-     * Returns a single card to be dealt to the player
-     * at the start of their turn.
-     * @return dealt card
-     */
-    public JRadioButton getDealtCard() {
-        return deck.drawCard();
-    }
     /**
      * Checks if the game has been won after a card has been played.
      *

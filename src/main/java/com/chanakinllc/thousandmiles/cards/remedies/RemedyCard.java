@@ -20,6 +20,4 @@ public abstract class RemedyCard extends Card {
         return CardCategory.REMEDY;
     }
 
-    public abstract CardType getHazardToRemedy();
-
 }

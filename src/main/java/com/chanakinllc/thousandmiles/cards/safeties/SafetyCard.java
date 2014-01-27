@@ -10,7 +10,9 @@ import com.chanakinllc.thousandmiles.cards.Card;
  */
 public abstract class SafetyCard extends Card {
 
-    public abstract CardType [] getCardTypesWhichCorrespondToThisSafety();
+    public abstract CardType [] getCardTypesPrevented();
+
+    public abstract CardType [] getCardTypesWithSameFunction();
 
     @Override
     public CardPile getPileType() {
@@ -20,5 +22,11 @@ public abstract class SafetyCard extends Card {
     @Override
     public CardCategory getCardCategory() {
         return CardCategory.SAFETY;
+    }
+
+    // You can play safety cards regardless of what else is on the board
+    @Override
+    public CardType [] getCardTypesThatArePlayableOn() {
+        return CardType.values();
     }
 }

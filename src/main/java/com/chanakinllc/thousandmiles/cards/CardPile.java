@@ -8,6 +8,6 @@ public enum CardPile {
     SAFETY,
     BATTLE,
     DISTANCE,
-    HAND,
+    DISCARD,
     DRAW
 }

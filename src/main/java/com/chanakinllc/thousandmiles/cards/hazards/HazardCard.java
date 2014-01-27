@@ -20,7 +20,8 @@ public abstract class HazardCard extends Card
         return CardCategory.HAZARD;
     }
 
-    protected abstract CardType getRemedy();
-
-    protected abstract CardType getSafety();
+    @Override
+    public CardType[] getCardTypesThatArePlayableOn() {
+        return new CardType[] { CardType.ROLL };
+    }
 }

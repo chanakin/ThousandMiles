@@ -1,0 +1,66 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.chanakinllc.thousandmiles.GameBoardFragment"
+    android:background="@android:color/holo_green_dark"
+    android:padding="5dp">
+
+    <!-- TODO: Update blank fragment layout -->
+
+    <LinearLayout android:id="@+id/deck_area"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@android:color/holo_red_dark"
+        android:padding="5dp"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true">
+
+        <View
+            android:id="@+id/discard_pile"
+            style="@style/CardPileArea"
+            android:background="@drawable/deck_holder"/>
+
+        <View
+            android:id="@+id/draw_pile"
+            style="@style/CardPileArea"
+            android:layout_marginRight="0dp"
+            android:background="@drawable/deck_holder"/>
+
+    </LinearLayout>
+
+    <include layout="@layout/card_play_area"
+        android:id="@+id/player_card_area"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true" />
+
+    <include layout="@layout/hand_layout"
+        android:id="@+id/hand"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+
+    <include
+        layout="@layout/opponent_card_play_area"
+        android:id="@+id/opponent_card_area"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true" />
+
+    <include
+        layout="@layout/hand_layout"
+        android:id="@+id/opponent_hand"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true" />
+
+
+</RelativeLayout>

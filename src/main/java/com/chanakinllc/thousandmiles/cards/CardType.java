@@ -6,7 +6,7 @@ import com.chanakinllc.thousandmiles.cards.distance.OneHundredMilesDistanceCard;
 import com.chanakinllc.thousandmiles.cards.distance.SeventyFiveMilesDistanceCard;
 import com.chanakinllc.thousandmiles.cards.distance.TwentyFiveMilesDistanceCard;
 import com.chanakinllc.thousandmiles.cards.distance.TwoHundredMilesDistanceCard;
-import com.chanakinllc.thousandmiles.cards.hazards.AccidentHazardCard;
+import com.chanakinllc.thousandmiles.cards.hazards.AccidentCard;
 import com.chanakinllc.thousandmiles.cards.hazards.FlatTireCard;
 import com.chanakinllc.thousandmiles.cards.hazards.OutOfGasCard;
 import com.chanakinllc.thousandmiles.cards.hazards.SpeedLimitCard;
@@ -25,7 +25,7 @@ import com.chanakinllc.thousandmiles.cards.safeties.RightOfWayCard;
  * Created by chan on 1/26/14.
  */
 public enum CardType {
-    ACCIDENT(R.integer.num_accident_cards_per_deck, AccidentHazardCard.class),
+    ACCIDENT(R.integer.num_accident_cards_per_deck, AccidentCard.class),
     OUT_OF_GAS(R.integer.num_out_of_gas_cards_per_deck, OutOfGasCard.class),
     FLAT_TIRE(R.integer.num_flat_tire_cards_per_deck, FlatTireCard.class),
     STOP(R.integer.num_stop_cards_per_deck, StopCard.class),

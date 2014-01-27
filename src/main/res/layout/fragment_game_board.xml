@@ -1,13 +1,67 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.chanakinllc.thousandmiles.GameBoardFragment">
+    tools:context="com.chanakinllc.thousandmiles.GameBoardFragment"
+    android:background="@android:color/holo_green_dark"
+    android:padding="10dp">
 
     <!-- TODO: Update blank fragment layout -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
 
-</FrameLayout>
+    <LinearLayout android:id="@+id/deck_area"
+        android:layout_centerInParent="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@android:color/holo_red_dark"
+        android:padding="5dp">
+
+        <View
+            android:id="@+id/discard_pile"
+            style="@style/CardPileArea"
+            android:background="@drawable/deck_holder"/>
+
+        <View
+            android:id="@+id/draw_pile"
+            style="@style/CardPileArea"
+            android:layout_marginRight="0dp"
+            android:background="@drawable/deck_holder"/>
+
+        </LinearLayout>
+
+    <include layout="@layout/card_play_area"
+        android:id="@+id/player_card_area"
+        android:layout_above="@+id/hand"
+        android:layout_centerHorizontal="true"/>
+
+    <include layout="@layout/hand_layout"
+        android:id="@+id/hand"/>
+
+    <LinearLayout
+        android:id="@+id/opponent_area"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+
+        <include
+            layout="@layout/hand_layout"
+            android:id="@+id/opponent_hand"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerInParent="true"
+            android:layout_marginBottom="10dp"/>
+
+        <include
+            layout="@layout/opponent_card_play_area"
+            android:id="@+id/opponent_card_area"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/deck_area"
+            android:layout_below="@+id/opponent_hand" />
+    </LinearLayout>
+
+</RelativeLayout>

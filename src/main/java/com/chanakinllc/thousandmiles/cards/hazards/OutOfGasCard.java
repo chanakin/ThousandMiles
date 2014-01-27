@@ -1,5 +1,9 @@
 package com.chanakinllc.thousandmiles.cards.hazards;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import com.chanakinllc.thousandmiles.R;
 import com.chanakinllc.thousandmiles.cards.CardType;
 
 /**
@@ -12,12 +16,33 @@ public class OutOfGasCard extends HazardCard {
     }
 
     @Override
-    protected CardType getRemedy() {
-        return CardType.GASOLINE;
+    public int getCardImageResourceId() {
+        return R.drawable.out_of_gas;
+    }
+
+    public OutOfGasCard(Parcel in) {
+
     }
 
     @Override
-    protected CardType getSafety() {
-        return CardType.EXTRA_TANK;
+    public int describeContents() {
+        return 0;
     }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+
+    }
+
+    public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
+        @Override
+        public OutOfGasCard createFromParcel(Parcel parcel) {
+            return new OutOfGasCard(parcel);
+        }
+
+        @Override
+        public Object[] newArray(int i) {
+            return new OutOfGasCard[i];
+        }
+    };
 }

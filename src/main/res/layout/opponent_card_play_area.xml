@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_centerInParent="true"
+    android:layout_centerHorizontal="true"
+    android:orientation="horizontal"
+    android:background="@android:color/transparent">
+
+    <GridLayout
+        android:id="@+id/distance_piles"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="-13dp">
+
+        <View
+            android:id="@+id/twenty_five_miles_pile"
+            android:layout_column="1"
+            android:layout_row="1"
+            style="@style/CardPileArea"
+            android:layout_marginRight="10dp"/>
+
+        <View
+            android:id="@+id/seventy_five_miles_pile"
+            style="@style/CardPileArea"
+            android:layout_column="1"
+            android:layout_row="2"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="-60dp"/>
+
+        <View
+            android:id="@+id/fifty_miles_pile"
+            style="@style/CardPileArea"
+            android:layout_columnSpan="2"
+            android:layout_column="2"
+            android:layout_row="1"
+            android:layout_marginRight="0dp"/>
+
+        <View
+            android:id="@+id/one_hundred_miles_pile"
+            style="@style/CardPileArea"
+            android:layout_column="2"
+            android:layout_row="2"
+            android:layout_marginTop="-60dp"
+            android:layout_marginRight="0dp"/>
+
+        <View
+            android:id="@+id/two_hundred_miles_pile"
+            style="@style/CardPileArea"
+            android:layout_columnSpan="2"
+            android:layout_column="1"
+            android:layout_row="1"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="25dp"/>
+
+    </GridLayout>
+
+    <View
+        android:id="@+id/battle_pile"
+        style="@style/CardPileArea"
+        android:layout_marginRight="10dip"/>
+
+    <View
+        android:id="@+id/speed_pile"
+        style="@style/CardPileArea"/>
+
+    <GridLayout
+        android:id="@+id/safety_pile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="0dp">
+
+        <View
+            android:id="@+id/safety_card_one"
+            android:layout_column="1"
+            android:layout_row="1"
+            style="@style/CardPileArea"
+            android:layout_marginRight="10dp"/>
+
+        <View
+            android:id="@+id/safety_card_two"
+            style="@style/CardPileArea"
+            android:layout_column="1"
+            android:layout_row="2"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="-48dp"/>
+
+        <View
+            android:id="@+id/safety_card_three"
+            style="@style/CardPileArea"
+            android:layout_column="2"
+            android:layout_row="1"
+            android:layout_marginRight="0dp"/>
+
+        <View
+            android:id="@+id/safety_card_four"
+            style="@style/CardPileArea"
+            android:layout_column="2"
+            android:layout_row="2"
+            android:layout_marginTop="-48dp"
+            android:layout_marginRight="0dp"/>
+    </GridLayout>
+
+</LinearLayout>

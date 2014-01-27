@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="card_pile_area_width">52dp</dimen>
+    <dimen name="card_pile_area_height">72dp</dimen>
+    <dimen name="card_pile_area_margin_right">10dp</dimen>
+    <dimen name="card_pile_area_border_dash_gap">4dp</dimen>
+    <dimen name="card_pile_area_border_dash_width">4dp</dimen>
+    <dimen name="hand_card_margin_right">-10dp</dimen>
+
+    <dimen name="deck_area_width">57dp</dimen>
+    <dimen name="deck_area_height">77dp</dimen>
+    <dimen name="deck_area_margin_right">10dp</dimen>
+</resources>

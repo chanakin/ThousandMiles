@@ -1,5 +1,9 @@
 package com.chanakinllc.thousandmiles.cards.hazards;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import com.chanakinllc.thousandmiles.R;
 import com.chanakinllc.thousandmiles.cards.CardType;
 
 /**
@@ -12,12 +16,33 @@ public class StopCard extends HazardCard {
     }
 
     @Override
-    protected CardType getRemedy() {
-        return CardType.ROLL;
+    public int getCardImageResourceId() {
+        return R.drawable.stop;
+    }
+
+    public StopCard(Parcel in) {
+
     }
 
     @Override
-    protected CardType getSafety() {
-        return CardType.RIGHT_OF_WAY;
+    public int describeContents() {
+        return 0;
     }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+
+    }
+
+    public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
+        @Override
+        public StopCard createFromParcel(Parcel parcel) {
+            return new StopCard(parcel);
+        }
+
+        @Override
+        public Object[] newArray(int i) {
+            return new StopCard[i];
+        }
+    };
 }
