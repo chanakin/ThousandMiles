@@ -16,8 +16,10 @@ import java.util.HashMap;
  * Created by chan on 1/25/14.
  */
 public class Player {
+
     private ArrayList<Card> hand = new ArrayList<Card>();
     private ArrayList<Card> battlePile = new ArrayList<Card>();
+
     private HashMap<CardType, SafetyCard> safetyPile = new HashMap<CardType, SafetyCard>();
     private ArrayList<Card> speedPile = new ArrayList<Card>();
     private ArrayList<DistanceCard> distancePile = new ArrayList<DistanceCard>();
@@ -38,30 +40,29 @@ public class Player {
         return name;
     }
 
-    public void setPlayedCard(Card card)
+    public void setPlayedCard(Card card, CardPile pile)
     {
         CardCategory type = card.getCardCategory();
 
-        switch(type)
-        {
-            case HAZARD:
-                if( card.getCardType() != CardType.SPEED_LIMIT ) {
-                    battlePile.add(card);
-                }
-                else {
-                    speedPile.add(card);
-                }
-                break;
+        switch(pile) {
 
-            case REMEDY:
-                if( card.getCardType() != CardType.END_OF_LIMIT ) {
-                    battlePile.add(card);
+            case SPEED:
+                speedPile.add(card);
+                break;
+            case SAFETY:
+                try {
+                    safetyPile.put(card.getCardType(), (SafetyCard) card);
                 }
-                else {
-                    speedPile.add(card);
+                catch (ClassCastException cce ) {
+                    Log.e( "SET_PLAYED_CARD", "Unable to cast card to safety card!", cce);
                 }
 
                 break;
+            case BATTLE:
+
+                battlePile.add(card);
+                break;
+
             case DISTANCE:
 
                 try {
@@ -73,18 +74,8 @@ public class Player {
                     Log.e( "SET_PLAYED_CARD", "Unable to cast card to distance card!", cce);
                 }
                 break;
-
-            case SAFETY:
-                try {
-                    safetyPile.put(card.getCardType(), (SafetyCard) card);
-                }
-                catch (ClassCastException cce ) {
-                    Log.e( "SET_PLAYED_CARD", "Unable to cast card to safety card!", cce);
-                }
-                break;
-
             default:
-                Log.i("ERROR", "Panic! We received a card type we can't handle!");
+                Log.i( "SET_PLAYED_CARD", "Unable to place card in pile as Player does not have knowledge of that pile");
         }
     }
 
@@ -98,29 +89,40 @@ public class Player {
                 return speedPile.isEmpty() ? null : speedPile.get(speedPile.size()-1);
             case DISTANCE:
                 return distancePile.isEmpty() ? null : distancePile.get(distancePile.size()-1);
-            case HAND:
-                return hand.isEmpty() ? null : hand.get(hand.size()-1);
             case SAFETY:
-                return hand.isEmpty() ? null : safetyPile.get(safetyPile.size()-1);
+                return safetyPile.isEmpty() ? null : safetyPile.get(safetyPile.size()-1);
             default:
                 Log.i("ERROR!", "Panic! We received a request to peek at a card pile we don't have!");
                 return null;
         }
     }
 
-    public HashMap<CardType, SafetyCard> getSafetyCardsInPlay() {
-        return safetyPile;
+    public boolean hasSafetyCardInPlay(CardType safetyCardType) {
+        return safetyPile.containsKey(safetyCardType);
     }
 
     public int getDistanceTraveled() {
         return distanceTraveled;
     }
 
-    public void setDistanceTraveled(int distanceTraveled) {
-        this.distanceTraveled = distanceTraveled;
-    }
-
     public int getUniqueId() {
         return uniqueId;
+    }
+
+    public ArrayList<Card> getHand() {
+        return hand;
+    }
+
+    public void setHand(ArrayList<Card> hand) {
+        this.hand = hand;
+    }
+
+    public boolean isAbleToPlayDistanceCards() {
+        Card battlePileTopCard = peekAtPile(CardPile.BATTLE);
+        return (battlePileTopCard != null && (CardType.ROLL == battlePileTopCard.getCardType() || (CardCategory.REMEDY == battlePileTopCard.getCardCategory() && hasSafetyCardInPlay(CardType.RIGHT_OF_WAY)) ));
+    }
+
+    public HashMap<CardType, SafetyCard> getSafetyPile() {
+        return safetyPile;
     }
 }

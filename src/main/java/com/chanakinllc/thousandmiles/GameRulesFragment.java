@@ -1,7 +1,9 @@
 package com.chanakinllc.thousandmiles;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,8 +16,6 @@ import com.chanakinllc.thousandmiles.cards.CardType;
 import com.chanakinllc.thousandmiles.cards.safeties.SafetyCard;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 
 /**
  * Created by chan on 1/25/14.
@@ -25,36 +25,38 @@ public class GameRulesFragment extends Fragment {
     private Player currentPlayer;
 
     //Create an object of the deck class
-    private Deck deck = new Deck();
+    private Deck deck;
 
     //Eventually I'd like to make this to be a 4-player game
     private ArrayList<Player> players = new ArrayList<Player>();
 
-    private ArrayList<String> discardPile = new ArrayList<String>();
+    private ArrayList<Card> discardPile = new ArrayList<Card>();
 
-    private ArrayList<String> handsToDeal = null;
+    private static final String PLAYERS_LIST = "PlayersList";
+    private static final int NUM_PLAYERS = 2;
 
-    //Holds the mileage accumulated by each player
-    private int player1MileageTotal = 0;
-    private int player2MileageTotal = 0;
+    private GameRulesFragmentListener listener;
 
-    private static final int MAX_PLAYERS = 4;
-    private static final String PLAYERS_LIST = "NumPlayers";
+    public interface GameRulesFragmentListener {
 
-    public static GameRulesFragment newInstance( String [] playerNames ) {
-        String [] players;
+        public void gameOver(Player winningPlayer);
 
-        if( playerNames.length > MAX_PLAYERS ) {
-            players = new String[MAX_PLAYERS];
+        public void computerPlayed(Card card);
 
-            for( int i = 0; i < MAX_PLAYERS; i++ ) {
-                players[i] = playerNames[i];
-            }
+        public void computerDrewCard(Card card);
 
+        public void playerMayBeginTurn();
+    }
+
+    public static GameRulesFragment newInstance( String playerName ) {
+        String [] players = new String[NUM_PLAYERS];
+
+        if( TextUtils.isEmpty(playerName) ){
+            playerName = "Player 1";
         }
-        else {
-            players = playerNames;
-        }
+
+        players[0] = playerName;
+        players[1] = "Computer";
 
         Bundle bundle = new Bundle();
         bundle.putStringArray(PLAYERS_LIST, players);
@@ -64,8 +66,26 @@ public class GameRulesFragment extends Fragment {
         return fragment;
     }
 
-    private GameRulesFragment() {
+    public GameRulesFragment() {
 
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+
+        try {
+            listener = (GameRulesFragmentListener) activity;
+        }
+        catch(ClassCastException cce) {
+            throw new ClassCastException(activity.toString() + " must implement GameRulesFragmentListener");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        listener = null;
     }
 
     @Override
@@ -78,15 +98,19 @@ public class GameRulesFragment extends Fragment {
                 return;
             }
 
+            // Create a new player and give them a hand to start with
             for( int i = 0; i < playerNames.length; i++ ) {
-                players.add(new Player(playerNames[i], i));
+                Player newPlayer = new Player(playerNames[i], i);
+                newPlayer.setHand(deck.dealHand());
+                players.add(newPlayer);
             }
         }
 
-        setRetainInstance(true);
+        deck = new Deck();
         //Start out selecting a player at random to begin the game
         currentPlayer = getRandomPlayer();
 
+        setRetainInstance(true);
         super.onCreate(savedInstanceState);
     }
 
@@ -108,34 +132,39 @@ public class GameRulesFragment extends Fragment {
      * @param opposingPlayerKey the card itself
      * @return String where to place the card
      */
-    public boolean validatePlay(Card card, int playerKey, int opposingPlayerKey, CardPile whichPile) {
+    public boolean cardPlayed(Card card, int playerKey, int opposingPlayerKey, CardPile whichPile) {
         Player cardPlayer = players.get(playerKey);
-        Player opposingPlayer = players.get(opposingPlayerKey);
+        Player opponent = players.get(opposingPlayerKey);
+
+        Player playerWhoseAreaIsBeingPlayedOn = cardPlayer;
 
         if( null == cardPlayer || cardPlayer != currentPlayer ) {
             return false;
         }
 
-        // Can't play a hazard card on yourself
-        if( card.getCardCategory() == CardCategory.HAZARD && null == opposingPlayer ) {
-            return false;
-        }
-
-
         //It's always okay to discard any card
         if( whichPile == CardPile.DISCARD ) {
-            cardPlayer.setPlayedCard(card);
+            discardPile.add(card);
             return true;
         }
-        else if( whichPile != card.getPileType() ) {
+
+        // It's not meant for the discard pile, check if it's being placed in a pile it doesn't belong
+        if( whichPile != card.getPileType() ) {
             return false;
         }
 
         switch( card.getCardCategory() ) {
 
             case HAZARD:
-                //First check that no safeties are in play that do not allow this hazard to be played
-                for( SafetyCard safetyCard : cardPlayer.getSafetyCardsInPlay().values() ) {
+                // Can't play a hazard on yourself
+                if( null == opponent ) {
+                    return false;
+                }
+
+                playerWhoseAreaIsBeingPlayedOn = opponent;
+
+                //First, see if a safety card is protecting the opponent from this card type
+                for( SafetyCard safetyCard : opponent.getSafetyPile().values() ) {
                     for( CardType preventedCardTypes : safetyCard.getCardTypesPrevented() ) {
                         if( preventedCardTypes == card.getCardType() ) {
                             return false;
@@ -143,175 +172,148 @@ public class GameRulesFragment extends Fragment {
                     }
                 }
 
+                // Quick check for our special case Speed Limit, which can be played if the speed limit pile is null
+                if( null == opponent.peekAtPile(whichPile) && card.getCardType() == CardType.SPEED_LIMIT ) {
+                    break;
+                }
+
+                // If we've made it this far, time to check that the opponent is rolling and able to be hit with a hazard
+                if( !opponent.isAbleToPlayDistanceCards() ) {
+                    return false;
+                }
+
+
                 // Then check if the card on the pile is one that this card can play on
                 for( CardType cardTypePlayableUpon : card.getCardTypesThatArePlayableOn() ) {
-                    CardType topOfPileCardTypeAfterSafety;
-//
-//                    if( cardPlayer.peekAtPile( CardPile.BATTLE ).getCardCategory() == CardCategory.REMEDY &&  )
-                    if( cardPlayer.peekAtPile( CardPile.BATTLE ).getCardType() == cardTypePlayableUpon ) {
-                        return true;
+                    if( opponent.peekAtPile( whichPile ).getCardType() == cardTypePlayableUpon ) {
+                        break;
                     }
                 }
 
-                break;
+                return false;
+
             case REMEDY:
-                if( CardCategory.HAZARD == cardPlayer.peekAtPile(CardPile.BATTLE).getCardCategory() ) {
 
+                // First, check that we don't already have a safety which removes the need for this remedy
+                for( SafetyCard safetyCard : currentPlayer.getSafetyPile().values() ) {
+                    for( CardType cardTypeCoveredBySafety : safetyCard.getCardTypesWithSameFunction() ) {
+                        if( cardTypeCoveredBySafety == card.getCardType() ) {
+                            return false;
+                        }
+                    }
                 }
 
-                break;
+                Card topCard = currentPlayer.peekAtPile(whichPile);
+
+                // Can't play this card if there's nothing on the pile
+                if( null == topCard ) {
+                    return false;
+                }
+
+                // Last, check if the card on the pile is one that this card can play on
+                for( CardType cardTypePlayableUpon : card.getCardTypesThatArePlayableOn() ) {
+                    if( topCard.getCardType() == cardTypePlayableUpon ) {
+                        break;
+                    }
+                }
+
+                return false;
+
             case DISTANCE:
-                break;
-            case SAFETY:
-                break;
-        }
 
-        switch( card.getCardType() ) {
-
-            case ACCIDENT:
-            case OUT_OF_GAS:
-            case FLAT_TIRE:
-            case STOP:
-
-                break;
-            case SPEED_LIMIT:
-                break;
-            case REPAIRS:
-                break;
-            case GASOLINE:
-                break;
-            case SPARE_TIRE:
-                break;
-            case ROLL:
-                break;
-            case END_OF_LIMIT:
-                break;
-            case DRIVING_ACE:
-                break;
-            case EXTRA_TANK:
-                break;
-            case PUNCTURE_PROOF:
-                break;
-            case RIGHT_OF_WAY:
-                break;
-            case TWENTY_FIVE_MILES:
-            case FIFTY_MILES:
-
-                switch( cardPlayer.peekAtPile(CardPile.BATTLE).getCardType() ) {
-                    case ACCIDENT:
-                    case OUT_OF_GAS:
-                    case FLAT_TIRE:
-                    case STOP:
-
-
+                if( currentPlayer.isAbleToPlayDistanceCards() ) {
+                    // If we're rolling twenty five or fifty miles, we're clear.
+                    if(  CardType.TWENTY_FIVE_MILES == card.getCardType() || CardType.FIFTY_MILES == card.getCardType() ) {
                         break;
-                    case REPAIRS:
-                    case GASOLINE:
-                    case SPARE_TIRE:
-//                        if( )
+                    }
+
+                    // Card played that is over the "speed limit" that could be imposed, so we need to check if a speed limit is in place
+                    Card speedPileTopCard = currentPlayer.peekAtPile(CardPile.SPEED);
+
+                    if( null == speedPileTopCard || speedPileTopCard.getCardType() == CardType.END_OF_LIMIT ) {
                         break;
-                    case ROLL:
-                        cardPlayer.setPlayedCard(card);
-                        return true;
+                    }
                 }
+
+                return false;
+
+            case SAFETY: // Can always play a safety
                 break;
-            case SEVENTY_FIVE_MILES:
-                break;
-            case ONE_HUNDRED_MILES:
-                break;
-            case TWO_HUNDRED_MILES:
-                break;
+
+            default:
+                Log.i("GameRulesFragment", "Unexpected category, unable to determine validity of play");
+                return false;
         }
 
-        Card cardOnPile = cardPlayer.peekAtPile(card.getPileType());
+        playerWhoseAreaIsBeingPlayedOn.setPlayedCard(card, whichPile);
+        currentPlayer.getHand().remove(card); //Remove the card from their hand
+        if( card.getCardCategory() == CardCategory.DISTANCE ) {
+            checkIfGameWon();
+        }
 
-        ArrayList<CardType> playableCardTypes = new ArrayList<CardType>( Arrays.asList(card.getCardTypesThatArePlayableOn()));
-
-
-//for( CardType playableCardType : card.getCardTypesThatArePlayableOn() ) {
-//            if( playableCardType == cardOnPile.getCardType() ) {
-//                return true;
-//            }
-//        }
-//
-//        if( card.getCardCategory() == CardCategory.HAZARD ) {
-//
-//        }
         return true;
     }
+
+    private void beginNextPlayersTurn() {
+        switch( currentPlayer.getUniqueId() ) {
+            case 0:
+                currentPlayer = players.get(1); //Computer player, let the computer take their turn.
+                handleComputerAI();
+            case 1:
+                currentPlayer = players.get(0);
+                listener.playerMayBeginTurn();
+            default:
+                Log.i("GameRulesFragment", "Unable to switch to the other player.");
+        }
+    }
+
+    private void handleComputerAI() {
+        for(Card cardInHand : currentPlayer.getHand()) {
+            // Play the first card we come across that is valid to play
+            if( cardPlayed(cardInHand, currentPlayer.getUniqueId(), 0, cardInHand.getPileType()) ) {
+                listener.computerPlayed(cardInHand);
+                listener.computerDrewCard(drawCard());
+            }
+        }
+    }
+
     /**
-     * Shuffles the deck and receives the cards to be dealt.
-     *
-     * @param playerId the player
+     * Returns the hand for the current player ONLY
      * @return a ArrayList of cards based on which player the server
      * requests the hand for.
      */
-//    public ArrayList getHand(int playerId) {
-//
-//        //Shuffle the deck
-//        deck.shuffle();
-//
-//        //Receive the cards to be dealt
-//        handsToDeal = deck.dealHand();
-//
-//        //Used to alternate cards being dealt so that each player
-//        //receives every other card
-//        int cardCount = 0;
-//
-//        Iterator it = handsToDeal.iterator();
-//
-//        while(it.hasNext()){
-//            if(cardCount%2 == 0) {
-//                player1Hand.add((JRadioButton)it.next());
-//            }
-//            else {
-//                player2Hand.add((JRadioButton)it.next());
-//            }
-//            cardCount++;
-//        }
-//        handsToDeal.clear();//remove all the cards from the ArrayList
-//
-//        //Return the hands
-//        if(playerId == 0) {
-//            return player1Hand;
-//        }
-//        else {
-//            return player2Hand;
-//        }
-//    }
-//    /**
-//     * Returns a single card to be dealt to the player
-//     * at the start of their turn.
-//     * @return dealt card
-//     */
-//    public JRadioButton getDealtCard() {
-//        return deck.drawCard();
-//    }
+    public ArrayList<Card> getHand() {
+        return currentPlayer.getHand();
+    }
+
+    /**
+     * Returns a single card when a player tries to draw a card
+     * @return dealt card
+     */
+    public Card drawCard() {
+        Card drawnCard = deck.drawCard();
+        currentPlayer.getHand().add(drawnCard);
+        return drawnCard;
+    }
 
     /**
      * Checks if the game has been won after a card has been played.
      *
      * @return boolean that denotes if the game has been won or play should continue (true if won, false if not);
      */
-    public boolean checkIfGameWon(int player) {
-        if(player == 0) {
-            if(player1MileageTotal > 700) {
-                return true;
-            }
-            else return false;
+    private void checkIfGameWon() {
+        if(currentPlayer.getDistanceTraveled() > 700 ) {
+            listener.gameOver(currentPlayer);
         }
-        else {
-            if(player2MileageTotal > 700) {
-                return true;
-            }
-            else return false;
-        }
+
+        beginNextPlayersTurn();
     }
+
     /**
      * Returns the discard pile.
      * @return ArrayList holding all discarded cards.
      */
-    public ArrayList getDiscardPile() {
+    public ArrayList<Card> getDiscardPile() {
         return discardPile;
     }
 }
