@@ -6,8 +6,6 @@
     android:background="@android:color/holo_green_dark"
     android:padding="5dp">
 
-    <!-- TODO: Update blank fragment layout -->
-
     <LinearLayout android:id="@+id/deck_area"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -15,15 +13,14 @@
         android:background="@android:color/holo_red_dark"
         android:padding="5dp"
         android:layout_centerVertical="true"
-        android:layout_below="@+id/opponent_hand"
         android:layout_marginTop="10dp" >
 
-        <View
+        <ImageView
             android:id="@+id/discard_pile"
             style="@style/CardPileArea"
             android:background="@drawable/deck_holder"/>
 
-        <View
+        <RelativeLayout
             android:id="@+id/draw_pile"
             style="@style/CardPileArea"
             android:layout_marginRight="0dp"

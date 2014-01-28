@@ -12,7 +12,7 @@ public abstract class HazardCard extends Card
 {
     @Override
     public CardPile getPileType() {
-        return CardPile.BATTLE;
+        return CardPile.OPPONENT_BATTLE;
     }
 
     @Override

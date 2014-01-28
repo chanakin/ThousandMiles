@@ -4,12 +4,19 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.chanakinllc.thousandmiles.R;
+import com.chanakinllc.thousandmiles.cards.CardPile;
 import com.chanakinllc.thousandmiles.cards.CardType;
 
 /**
  * Created by chan on 1/26/14.
  */
 public class SpeedLimitCard extends HazardCard {
+
+    @Override
+    public CardPile getPileType() {
+        return CardPile.OPPONENT_SPEED;
+    }
+
     @Override
     public CardType getCardType() {
         return CardType.SPEED_LIMIT;

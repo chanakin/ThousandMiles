@@ -9,5 +9,7 @@ public enum CardPile {
     BATTLE,
     DISTANCE,
     DISCARD,
-    DRAW
+    DRAW,
+    OPPONENT_SPEED,
+    OPPONENT_BATTLE
 }

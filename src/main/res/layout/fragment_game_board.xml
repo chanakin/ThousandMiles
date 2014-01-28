@@ -40,12 +40,12 @@
         android:background="@android:color/holo_red_dark"
         android:padding="5dp">
 
-        <View
+        <ImageView
             android:id="@+id/discard_pile"
             style="@style/CardPileArea"
             android:background="@drawable/deck_holder" />
 
-        <View
+        <RelativeLayout
             android:id="@+id/draw_pile"
             style="@style/CardPileArea"
             android:layout_marginRight="0dp"
