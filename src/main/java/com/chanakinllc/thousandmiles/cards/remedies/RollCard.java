@@ -25,6 +25,7 @@ public class RollCard extends RemedyCard {
         return R.drawable.roll;
     }
 
+    public RollCard() {}
     public RollCard(Parcel in) {
 
     }

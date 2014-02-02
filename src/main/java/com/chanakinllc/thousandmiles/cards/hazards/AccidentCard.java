@@ -20,6 +20,10 @@ public class AccidentCard extends HazardCard {
         return R.drawable.accident;
     }
 
+    public AccidentCard() {
+
+    }
+
     public AccidentCard(Parcel in) {
 
     }

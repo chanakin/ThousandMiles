@@ -25,6 +25,7 @@ public class EndOfLimitCard extends RemedyCard {
         return R.drawable.end_of_limit;
     }
 
+    public EndOfLimitCard() {}
     public EndOfLimitCard(Parcel in) {
 
     }

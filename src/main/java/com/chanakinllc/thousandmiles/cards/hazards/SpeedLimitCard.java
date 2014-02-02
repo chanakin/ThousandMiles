@@ -27,6 +27,10 @@ public class SpeedLimitCard extends HazardCard {
         return R.drawable.speed_limit;
     }
 
+    public SpeedLimitCard() {
+
+    }
+
     public SpeedLimitCard(Parcel in) {
 
     }

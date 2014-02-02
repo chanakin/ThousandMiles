@@ -20,6 +20,10 @@ public class FlatTireCard extends HazardCard {
         return R.drawable.flat_tire;
     }
 
+    public FlatTireCard() {
+
+    }
+
     public FlatTireCard(Parcel in) {
 
     }

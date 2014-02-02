@@ -25,40 +25,35 @@ import com.chanakinllc.thousandmiles.cards.safeties.RightOfWayCard;
  * Created by chan on 1/26/14.
  */
 public enum CardType {
-    ACCIDENT(R.integer.num_accident_cards_per_deck, AccidentCard.class),
-    OUT_OF_GAS(R.integer.num_out_of_gas_cards_per_deck, OutOfGasCard.class),
-    FLAT_TIRE(R.integer.num_flat_tire_cards_per_deck, FlatTireCard.class),
-    STOP(R.integer.num_stop_cards_per_deck, StopCard.class),
-    SPEED_LIMIT(R.integer.num_speed_limit_cards_per_deck, SpeedLimitCard.class),
-    REPAIRS(R.integer.num_repairs_cards_per_deck, RepairsCard.class),
-    GASOLINE(R.integer.num_gasoline_cards_per_deck, GasolineCard.class),
-    SPARE_TIRE(R.integer.num_spare_tire_cards_per_deck, SpareTireCard.class),
-    ROLL(R.integer.num_roll_cards_per_deck, RollCard.class),
-    END_OF_LIMIT(R.integer.num_end_of_limit_cards_per_deck, EndOfLimitCard.class),
-    DRIVING_ACE(R.integer.num_driving_ace_cards_per_deck, DrivingAceCard.class),
-    EXTRA_TANK(R.integer.num_extra_tank_cards_per_deck, ExtraTankCard.class),
-    PUNCTURE_PROOF(R.integer.num_puncture_proof_cards_per_deck, PunctureProofCard.class),
-    RIGHT_OF_WAY(R.integer.num_right_of_way_cards_per_deck, RightOfWayCard.class),
-    TWENTY_FIVE_MILES(R.integer.num_twenty_five_mile_cards_per_deck, TwentyFiveMilesDistanceCard.class),
-    FIFTY_MILES(R.integer.num_fifty_mile_cards_per_deck, FiftyMilesDistanceCard.class),
-    SEVENTY_FIVE_MILES(R.integer.num_seventy_five_mile_cards_per_deck, SeventyFiveMilesDistanceCard.class),
-    ONE_HUNDRED_MILES(R.integer.num_one_hundred_mile_cards_per_deck, OneHundredMilesDistanceCard.class),
-    TWO_HUNDRED_MILES(R.integer.num_two_hundred_mile_cards_per_deck, TwoHundredMilesDistanceCard.class);
+    ACCIDENT(3),
+    OUT_OF_GAS(3),
+    FLAT_TIRE(3),
+    STOP(5),
+    SPEED_LIMIT(4),
+    REPAIRS(6),
+    GASOLINE(6),
+    SPARE_TIRE(6),
+    ROLL(14),
+    END_OF_LIMIT(6),
+    DRIVING_ACE(1),
+    EXTRA_TANK(1),
+    PUNCTURE_PROOF(1),
+    RIGHT_OF_WAY(1),
+    TWENTY_FIVE_MILES(10),
+    FIFTY_MILES(10),
+    SEVENTY_FIVE_MILES(10),
+    ONE_HUNDRED_MILES(12),
+    TWO_HUNDRED_MILES(4);
 
-    private int numCardsPerDeck = 0;
-    private Class<?> cardClass;
+    private int numCardsPerDeck;
 
-    private CardType(int numCardsPerDeck, Class<?> cardClass) {
+    private CardType(int numCardsPerDeck) {
         this.numCardsPerDeck = numCardsPerDeck;
-        this.cardClass = cardClass;
     }
 
     public int getNumCardsPerDeck() {
         return numCardsPerDeck;
     }
 
-    public Class<?> getClassForCardType() {
-        return cardClass;
-    }
 }
 

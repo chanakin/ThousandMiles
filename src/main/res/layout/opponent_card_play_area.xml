@@ -15,14 +15,14 @@
         android:layout_marginRight="10dp"
         android:layout_marginTop="0dp">
 
-        <ImageView
+        <RelativeLayout
             android:id="@+id/opponent_twenty_five_miles_pile"
             android:layout_column="1"
             android:layout_row="1"
             style="@style/CardPileArea"
             android:layout_marginRight="10dp"/>
 
-        <ImageView
+        <RelativeLayout
             android:id="@+id/opponent_seventy_five_miles_pile"
             style="@style/CardPileArea"
             android:layout_column="1"
@@ -30,7 +30,7 @@
             android:layout_marginRight="10dp"
             android:layout_marginTop="-60dp"/>
 
-        <ImageView
+        <RelativeLayout
             android:id="@+id/opponent_fifty_miles_pile"
             style="@style/CardPileArea"
             android:layout_columnSpan="2"
@@ -38,7 +38,7 @@
             android:layout_row="1"
             android:layout_marginRight="0dp"/>
 
-        <ImageView
+        <RelativeLayout
             android:id="@+id/opponent_one_hundred_miles_pile"
             style="@style/CardPileArea"
             android:layout_column="2"
@@ -46,7 +46,7 @@
             android:layout_marginTop="-60dp"
             android:layout_marginRight="0dp"/>
 
-        <ImageView
+        <RelativeLayout
             android:id="@+id/opponent_two_hundred_miles_pile"
             style="@style/CardPileArea"
             android:layout_columnSpan="2"
@@ -57,12 +57,12 @@
 
     </GridLayout>
 
-    <ImageView
+    <RelativeLayout
         android:id="@+id/opponent_battle_pile"
         style="@style/CardPileArea"
         android:layout_marginRight="10dip"/>
 
-    <ImageView
+    <RelativeLayout
         android:id="@+id/opponent_speed_pile"
         style="@style/CardPileArea"/>
 
@@ -72,14 +72,14 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp">
 
-        <ImageView
+        <RelativeLayout
             android:id="@+id/opponent_safety_card_one"
             android:layout_column="1"
             android:layout_row="1"
             style="@style/CardPileArea"
             android:layout_marginRight="10dp"/>
 
-        <ImageView
+        <RelativeLayout
             android:id="@+id/opponent_safety_card_two"
             style="@style/CardPileArea"
             android:layout_column="1"
@@ -87,14 +87,14 @@
             android:layout_marginRight="10dp"
             android:layout_marginTop="-53dp"/>
 
-        <ImageView
+        <RelativeLayout
             android:id="@+id/opponent_safety_card_three"
             style="@style/CardPileArea"
             android:layout_column="2"
             android:layout_row="1"
             android:layout_marginRight="0dp"/>
 
-        <ImageView
+        <RelativeLayout
             android:id="@+id/opponent_safety_card_four"
             style="@style/CardPileArea"
             android:layout_column="2"

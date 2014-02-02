@@ -31,6 +31,8 @@ public class DrivingAceCard extends SafetyCard {
         return R.drawable.driving_ace;
     }
 
+    public DrivingAceCard() {}
+
     public DrivingAceCard(Parcel in) {
 
     }

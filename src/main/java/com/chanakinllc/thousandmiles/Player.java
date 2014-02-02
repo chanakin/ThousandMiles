@@ -17,7 +17,7 @@ import java.util.HashMap;
  */
 public class Player {
 
-    private ArrayList<Card> hand = new ArrayList<Card>();
+    private Card [] hand;
     private ArrayList<Card> battlePile = new ArrayList<Card>();
 
     private HashMap<CardType, SafetyCard> safetyPile = new HashMap<CardType, SafetyCard>();
@@ -109,11 +109,11 @@ public class Player {
         return uniqueId;
     }
 
-    public ArrayList<Card> getHand() {
+    public Card [] getHand() {
         return hand;
     }
 
-    public void setHand(ArrayList<Card> hand) {
+    public void setHand(Card[] hand) {
         this.hand = hand;
     }
 

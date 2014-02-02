@@ -26,6 +26,8 @@ public class RepairsCard extends RemedyCard {
         return R.drawable.repairs;
     }
 
+    public RepairsCard() {}
+
     public RepairsCard(Parcel in) {
 
     }

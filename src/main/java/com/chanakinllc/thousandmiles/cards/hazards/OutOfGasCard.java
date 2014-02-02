@@ -20,6 +20,10 @@ public class OutOfGasCard extends HazardCard {
         return R.drawable.out_of_gas;
     }
 
+    public OutOfGasCard() {
+
+    }
+
     public OutOfGasCard(Parcel in) {
 
     }

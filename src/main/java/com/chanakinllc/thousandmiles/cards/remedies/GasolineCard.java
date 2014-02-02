@@ -25,6 +25,8 @@ public class GasolineCard extends RemedyCard {
         return R.drawable.gasoline;
     }
 
+    public GasolineCard() {}
+
     public GasolineCard(Parcel in) {
 
     }

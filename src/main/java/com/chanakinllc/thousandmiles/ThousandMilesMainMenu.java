@@ -1,11 +1,12 @@
 package com.chanakinllc.thousandmiles;
 
+import com.chanakinllc.thousandmiles.cards.Card;
+import com.chanakinllc.thousandmiles.cards.CardPile;
 import com.chanakinllc.thousandmiles.util.SystemUiHider;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
-import android.net.Uri;
-import android.support.v4.app.Fragment;
+import android.app.DialogFragment;
+import android.app.FragmentTransaction;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -14,43 +15,9 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
-import java.util.ArrayList;
-
-/**
- * An example full-screen activity that shows and hides the system UI (i.e.
- * status bar and navigation/system bar) with user interaction.
- *
- * @see SystemUiHider
- */
-public class ThousandMilesMainMenu extends FragmentActivity implements MainMenuListFragment.MainMenuItemListener, GameBoardFragment.OnFragmentInteractionListener {
-    /**
-     * Whether or not the system UI should be auto-hidden after
-     * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
-     */
-    private static final boolean AUTO_HIDE = true;
-
-    /**
-     * If {@link #AUTO_HIDE} is set, the number of milliseconds to wait after
-     * user interaction before hiding the system UI.
-     */
-    private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
-
-    /**
-     * If set, will toggle the system UI visibility upon interaction. Otherwise,
-     * will show the system UI visibility upon interaction.
-     */
-    private static final boolean TOGGLE_ON_CLICK = true;
-
-    /**
-     * The flags to pass to {@link SystemUiHider#getInstance}.
-     */
-    private static final int HIDER_FLAGS = SystemUiHider.FLAG_HIDE_NAVIGATION;
-    public static final String MAIN_MENU_LIST_FRAGMENT = "mainMenuListFragment";
-
-    /**
-     * The instance of the {@link SystemUiHider} for this activity.
-     */
-    private SystemUiHider mSystemUiHider;
+public class ThousandMilesMainMenu extends FragmentActivity implements GameRulesEngineFragment.GameRulesEngineListener, GameBoardFragment.GameBoardListener {
+    private static final String RULES_FRAGMENT = "rulesFragment";
+    private static final String BOARD_FRAGMENT = "boardFragment";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,131 +25,65 @@ public class ThousandMilesMainMenu extends FragmentActivity implements MainMenuL
 
         setContentView(R.layout.main_menu_layout);
 
-        final View controlsView = findViewById(R.id.fullscreen_content_controls);
-        final View contentView = findViewById(R.id.fullscreen_content);
-
-        // Set up an instance of SystemUiHider to control the system UI for
-        // this activity.
-        mSystemUiHider = SystemUiHider.getInstance(this, contentView, HIDER_FLAGS);
-        mSystemUiHider.setup();
-        mSystemUiHider
-                .setOnVisibilityChangeListener(new SystemUiHider.OnVisibilityChangeListener() {
-                    // Cached values.
-                    int mControlsHeight;
-                    int mShortAnimTime;
-
-                    @Override
-                    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-                    public void onVisibilityChange(boolean visible) {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-                            // If the ViewPropertyAnimator API is available
-                            // (Honeycomb MR2 and later), use it to animate the
-                            // in-layout UI controls at the bottom of the
-                            // screen.
-                            if (mControlsHeight == 0) {
-                                mControlsHeight = controlsView.getHeight();
-                            }
-                            if (mShortAnimTime == 0) {
-                                mShortAnimTime = getResources().getInteger(
-                                        android.R.integer.config_shortAnimTime);
-                            }
-                            controlsView.animate()
-                                    .translationY(visible ? 0 : mControlsHeight)
-                                    .setDuration(mShortAnimTime);
-                        } else {
-                            // If the ViewPropertyAnimator APIs aren't
-                            // available, simply show or hide the in-layout UI
-                            // controls.
-                            controlsView.setVisibility(visible ? View.VISIBLE : View.GONE);
-                        }
-
-                        if (visible && AUTO_HIDE) {
-                            // Schedule a hide().
-                            delayedHide(AUTO_HIDE_DELAY_MILLIS);
-                        }
-                    }
-                });
-
-        // Set up the user interaction to manually show or hide the system UI.
-        contentView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (TOGGLE_ON_CLICK) {
-                    mSystemUiHider.toggle();
-                } else {
-                    mSystemUiHider.show();
-                }
-            }
-        });
-
-            ArrayList<String> listItemStrings = new ArrayList<String>();
-            listItemStrings.add("Play Game");
-            listItemStrings.add("Rules");
-            listItemStrings.add("High Scores");
-            listItemStrings.add("Settings");
-
-        MainMenuListFragment fragment = MainMenuListFragment.newInstance(listItemStrings);
-//            GameRulesFragment fragment = GameRulesFragment.newInstance("Chantell");
-        getSupportFragmentManager().beginTransaction().add(R.id.fullscreen_content, fragment, MAIN_MENU_LIST_FRAGMENT).commit();
-        // Upon interacting with UI controls, delay any scheduled hide()
-        // operations to prevent the jarring behavior of controls going away
-        // while interacting with the UI.
-        findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
-    }
-
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-
-        // Trigger the initial hide() shortly after the activity has been
-        // created, to briefly hint to the user that UI controls
-        // are available.
-        delayedHide(100);
-    }
-
-
-    /**
-     * Touch listener to use for in-layout UI controls to delay hiding the
-     * system UI. This is to prevent the jarring behavior of controls going away
-     * while interacting with activity UI.
-     */
-    View.OnTouchListener mDelayHideTouchListener = new View.OnTouchListener() {
-        @Override
-        public boolean onTouch(View view, MotionEvent motionEvent) {
-            if (AUTO_HIDE) {
-                delayedHide(AUTO_HIDE_DELAY_MILLIS);
-            }
-            return false;
-        }
-    };
-
-    Handler mHideHandler = new Handler();
-    Runnable mHideRunnable = new Runnable() {
-        @Override
-        public void run() {
-            mSystemUiHider.hide();
-        }
-    };
-
-    /**
-     * Schedules a call to hide() in [delay] milliseconds, canceling any
-     * previously scheduled calls.
-     */
-    private void delayedHide(int delayMillis) {
-        mHideHandler.removeCallbacks(mHideRunnable);
-        mHideHandler.postDelayed(mHideRunnable, delayMillis);
-    }
-
-    @Override
-    public void onItemClicked(ThousandMilesMenuItem item) {
-        if("Play Game".equalsIgnoreCase(item.getItemText())) {
-            GameBoardFragment gbf = new GameBoardFragment();
-            getSupportFragmentManager().beginTransaction().add(gbf, "gameBoardFragment");
+        if( null == savedInstanceState ) {
+            Log.i("IN MAIN MENU", "ADDING RULES ENGINE");
+            GameRulesEngineFragment fragment = GameRulesEngineFragment.newInstance("Chantell");
+            getSupportFragmentManager().beginTransaction().add(fragment, RULES_FRAGMENT).commit();
         }
     }
 
     @Override
-    public void onFragmentInteraction(Uri uri) {
+    public void requestedCardFromDrawPile() {
+
+    }
+
+    @Override
+    public void onCardPlayed(Card card, CardPile whichPile, int handIndexOfPlayedCard) {
+
+    }
+
+    @Override
+    public void rulesEngineBuilt() {
+
+        Log.i("IN MAIN MENU", "ADDING GAME BOARD FRAGMENT TO VIEW");
+        GameRulesEngineFragment rulesEngine = (GameRulesEngineFragment) getSupportFragmentManager().findFragmentByTag(RULES_FRAGMENT);
+
+        GameBoardFragment boardFragment = GameBoardFragment.newInstance(rulesEngine.getPlayerHand());
+        getSupportFragmentManager().beginTransaction().add(R.id.content_frame, boardFragment, BOARD_FRAGMENT).commit();
+
+        Log.i("IN MAIN MENU", "GAME BOARD FRAGMENT ADDED TO VIEW");
+    }
+
+    @Override
+    public void gameOver(Player winningPlayer) {
+       //TODO display dialog announcing the end of the game!
+    }
+
+    @Override
+    public void computerPlayed(Card card, int indexOfCardInComputerHand) {
+
+    }
+
+    @Override
+    public void computerDrewCard(int indexOfDrawnCardInComputerHand) {
+
+    }
+
+    @Override
+    public void playerMayBeginTurn() {
+
+    }
+
+    @Override
+    public void playDeemedInvalid(Card card, CardPile whichPile, int indexOfHandToReturnCard) {
+
+    }
+
+    public void placeDrawnCardInHand(Card card, int slotIndexInHand) {
+
+    }
+
+    public void maxNumberOfCardsInHandWhenDrawRequested() {
 
     }
 }

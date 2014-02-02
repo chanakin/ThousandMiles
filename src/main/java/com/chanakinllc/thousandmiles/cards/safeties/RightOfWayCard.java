@@ -32,6 +32,8 @@ public class RightOfWayCard extends SafetyCard {
         return R.drawable.right_of_way;
     }
 
+    public RightOfWayCard() {}
+
     public RightOfWayCard(Parcel in) {
 
     }

@@ -30,6 +30,8 @@ public class PunctureProofCard extends SafetyCard {
         return R.drawable.puncture_proof;
     }
 
+    public PunctureProofCard() {}
+
     public PunctureProofCard(Parcel in) {
 
     }

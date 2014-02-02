@@ -21,7 +21,7 @@ import java.util.ArrayList;
  * Created by chan on 1/25/14.
  * MODEL for the game -- this is a headless fragment
  */
-public class GameRulesFragment extends Fragment {
+public class GameRulesEngineFragment extends Fragment {
     private Player currentPlayer;
 
     //Create an object of the deck class
@@ -34,39 +34,50 @@ public class GameRulesFragment extends Fragment {
 
     private static final String PLAYERS_LIST = "PlayersList";
     private static final int NUM_PLAYERS = 2;
+    private static final int PLAYER_INDEX = 0; //The actual player (not computer) will always be the first in our list
+    private static final int COMPUTER_INDEX = 1; //The computer's ID will always be the second in our list of players
 
-    private GameRulesFragmentListener listener;
+    private GameRulesEngineListener listener;
 
-    public interface GameRulesFragmentListener {
+    private String [] playerNames;
+
+    public interface GameRulesEngineListener {
+        public void rulesEngineBuilt();
 
         public void gameOver(Player winningPlayer);
 
-        public void computerPlayed(Card card);
+        public void computerPlayed(Card card, int slotInOpponentHandCardOriginatedFrom);
 
-        public void computerDrewCard(Card card);
+        public void computerDrewCard(int indexOfDrawnCardInHand);
 
         public void playerMayBeginTurn();
+
+        public void playDeemedInvalid(Card card, CardPile whichPile, int indexOfHandToReturnCard);
+
+        public void placeDrawnCardInHand(Card card, int slotIndexInHand);
+
+        public void maxNumberOfCardsInHandWhenDrawRequested();
     }
 
-    public static GameRulesFragment newInstance( String playerName ) {
-        String [] players = new String[NUM_PLAYERS];
+    public static GameRulesEngineFragment newInstance( String playerName ) {
+        String [] names = new String[NUM_PLAYERS];
 
         if( TextUtils.isEmpty(playerName) ){
             playerName = "Player 1";
         }
 
-        players[0] = playerName;
-        players[1] = "Computer";
+        names[PLAYER_INDEX] = playerName;
+        names[COMPUTER_INDEX] = "Computer";
 
         Bundle bundle = new Bundle();
-        bundle.putStringArray(PLAYERS_LIST, players);
+        bundle.putStringArray(PLAYERS_LIST, names);
 
-        GameRulesFragment fragment = new GameRulesFragment();
+        GameRulesEngineFragment fragment = new GameRulesEngineFragment();
         fragment.setArguments(bundle);
         return fragment;
     }
 
-    public GameRulesFragment() {
+    public GameRulesEngineFragment() {
 
     }
 
@@ -75,10 +86,10 @@ public class GameRulesFragment extends Fragment {
         super.onAttach(activity);
 
         try {
-            listener = (GameRulesFragmentListener) activity;
+            listener = (GameRulesEngineListener) activity;
         }
         catch(ClassCastException cce) {
-            throw new ClassCastException(activity.toString() + " must implement GameRulesFragmentListener");
+            throw new ClassCastException(activity.toString() + " must implement GameRulesEngineListener");
         }
     }
 
@@ -90,11 +101,19 @@ public class GameRulesFragment extends Fragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        if( null != savedInstanceState ) {
-            String [] playerNames = savedInstanceState.getStringArray(PLAYERS_LIST);
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
 
-            if( null == playerNames ) {
-                Log.i("NO PLAYERS FOUND!", "PANIC PANIC PANIC, no players were found in saved instance state bundle");
+        Log.i("RULES ENGINE CREATION", "IN ON CREATE");
+
+        if( null != getArguments() ) {
+            Log.i("RULES ENGINE CREATION", "ARGUMENTS WERE NOT NULL");
+            deck = new Deck();
+            Log.i("RULES ENGINE CREATION", "DECK HAS BEEN BUILT");
+            String [] playerNames = getArguments().getStringArray(PLAYERS_LIST);
+
+            if( null == playerNames || playerNames.length == 0 ) {
+                Log.e("NO PLAYERS FOUND!", "PANIC PANIC PANIC, no players were found in getArguments");
                 return;
             }
 
@@ -103,15 +122,16 @@ public class GameRulesFragment extends Fragment {
                 Player newPlayer = new Player(playerNames[i], i);
                 newPlayer.setHand(deck.dealHand());
                 players.add(newPlayer);
+                Log.i("RULES ENGINE", "ADDED NEW PLAYER!");
             }
+
+
+            //Start out selecting a player at random to begin the game
+            currentPlayer = getRandomPlayer();
+            listener.rulesEngineBuilt();
         }
 
-        deck = new Deck();
-        //Start out selecting a player at random to begin the game
-        currentPlayer = getRandomPlayer();
-
-        setRetainInstance(true);
-        super.onCreate(savedInstanceState);
+        Log.i("RULES ENGINE CREATION", "HAVE NOTIFIED ACTIVITY THAT THE RULES ENGINE IS BUILT");
     }
 
     private Player getRandomPlayer() {
@@ -123,6 +143,11 @@ public class GameRulesFragment extends Fragment {
         return null;
     }
 
+    public void cardPlayed(Card card, CardPile whichPile, int indexOfHand) {
+        if( !isCardPlayValid(card, 0, 1, whichPile, indexOfHand) ) {
+            listener.playDeemedInvalid(card, whichPile, indexOfHand);
+        }
+    }
     /**
      * Contains all the logic for game play. Receives card that has been played
      * and determines where it is to be placed based on the rules of the game.
@@ -132,12 +157,13 @@ public class GameRulesFragment extends Fragment {
      * @param opposingPlayerKey the card itself
      * @return String where to place the card
      */
-    public boolean cardPlayed(Card card, int playerKey, int opposingPlayerKey, CardPile whichPile) {
+    private boolean isCardPlayValid(Card card, int playerKey, int opposingPlayerKey, CardPile whichPile, int indexOfHand) {
         Player cardPlayer = players.get(playerKey);
         Player opponent = players.get(opposingPlayerKey);
 
         Player playerWhoseAreaIsBeingPlayedOn = cardPlayer;
 
+        //TODO pass back some way of notifying the player what mistake they made, probably an enum
         if( null == cardPlayer || cardPlayer != currentPlayer ) {
             return false;
         }
@@ -241,12 +267,13 @@ public class GameRulesFragment extends Fragment {
                 break;
 
             default:
-                Log.i("GameRulesFragment", "Unexpected category, unable to determine validity of play");
+                Log.i("GameRulesEngineFragment", "Unexpected category, unable to determine validity of play");
                 return false;
         }
 
         playerWhoseAreaIsBeingPlayedOn.setPlayedCard(card, whichPile);
-        currentPlayer.getHand().remove(card); //Remove the card from their hand
+        currentPlayer.getHand()[indexOfHand] = null; //Remove the card from their hand
+
         if( card.getCardCategory() == CardCategory.DISTANCE ) {
             checkIfGameWon();
         }
@@ -263,16 +290,27 @@ public class GameRulesFragment extends Fragment {
                 currentPlayer = players.get(0);
                 listener.playerMayBeginTurn();
             default:
-                Log.i("GameRulesFragment", "Unable to switch to the other player.");
+                Log.i("GameRulesEngineFragment", "Unable to switch to the other player.");
         }
     }
 
+    //TODO make the AI a little smarter than this :)
     private void handleComputerAI() {
-        for(Card cardInHand : currentPlayer.getHand()) {
+        //First draw a card
+        //The first time this won't work as the computer's hand will be full
+        int indexOfDrawnCard = drawCard();
+
+        if( indexOfDrawnCard >= 0 ) {
+            listener.computerDrewCard(indexOfDrawnCard);
+        }
+
+        Card [] computerHand = players.get(1).getHand();
+        for(int i = 0; i < computerHand.length; i++ ) {
             // Play the first card we come across that is valid to play
-            if( cardPlayed(cardInHand, currentPlayer.getUniqueId(), 0, cardInHand.getPileType()) ) {
-                listener.computerPlayed(cardInHand);
-                listener.computerDrewCard(drawCard());
+            Card cardToPlay = computerHand[i];
+
+            if( isCardPlayValid(cardToPlay, 1, 0, cardToPlay.getPileType(), i) ) {
+                listener.computerPlayed(cardToPlay, i);
             }
         }
     }
@@ -282,18 +320,38 @@ public class GameRulesFragment extends Fragment {
      * @return a ArrayList of cards based on which player the server
      * requests the hand for.
      */
-    public ArrayList<Card> getHand() {
-        return currentPlayer.getHand();
+    public Card [] getPlayerHand() {
+        return players.get(PLAYER_INDEX).getHand();
+    }
+
+    public void cardDrawRequested() {
+        int indexOfDrawnCard = drawCard();
+
+        if( indexOfDrawnCard >= 0 ) {
+            listener.placeDrawnCardInHand(currentPlayer.getHand()[indexOfDrawnCard], indexOfDrawnCard);
+        }
+        else {
+            listener.maxNumberOfCardsInHandWhenDrawRequested();
+        }
     }
 
     /**
      * Returns a single card when a player tries to draw a card
      * @return dealt card
      */
-    public Card drawCard() {
+    private int drawCard() {
         Card drawnCard = deck.drawCard();
-        currentPlayer.getHand().add(drawnCard);
-        return drawnCard;
+
+        Card [] currentPlayerHand = currentPlayer.getHand();
+
+        for( int i = 0; i < currentPlayerHand.length; i++ ) {
+            if( currentPlayerHand[i] == null ) {
+                currentPlayerHand[i] = drawnCard;
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     /**
@@ -309,10 +367,6 @@ public class GameRulesFragment extends Fragment {
         beginNextPlayersTurn();
     }
 
-    /**
-     * Returns the discard pile.
-     * @return ArrayList holding all discarded cards.
-     */
     public ArrayList<Card> getDiscardPile() {
         return discardPile;
     }

@@ -4,6 +4,25 @@ import android.util.Log;
 
 import com.chanakinllc.thousandmiles.cards.Card;
 import com.chanakinllc.thousandmiles.cards.CardType;
+import com.chanakinllc.thousandmiles.cards.distance.FiftyMilesDistanceCard;
+import com.chanakinllc.thousandmiles.cards.distance.OneHundredMilesDistanceCard;
+import com.chanakinllc.thousandmiles.cards.distance.SeventyFiveMilesDistanceCard;
+import com.chanakinllc.thousandmiles.cards.distance.TwentyFiveMilesDistanceCard;
+import com.chanakinllc.thousandmiles.cards.distance.TwoHundredMilesDistanceCard;
+import com.chanakinllc.thousandmiles.cards.hazards.AccidentCard;
+import com.chanakinllc.thousandmiles.cards.hazards.FlatTireCard;
+import com.chanakinllc.thousandmiles.cards.hazards.OutOfGasCard;
+import com.chanakinllc.thousandmiles.cards.hazards.SpeedLimitCard;
+import com.chanakinllc.thousandmiles.cards.hazards.StopCard;
+import com.chanakinllc.thousandmiles.cards.remedies.EndOfLimitCard;
+import com.chanakinllc.thousandmiles.cards.remedies.GasolineCard;
+import com.chanakinllc.thousandmiles.cards.remedies.RepairsCard;
+import com.chanakinllc.thousandmiles.cards.remedies.RollCard;
+import com.chanakinllc.thousandmiles.cards.remedies.SpareTireCard;
+import com.chanakinllc.thousandmiles.cards.safeties.DrivingAceCard;
+import com.chanakinllc.thousandmiles.cards.safeties.ExtraTankCard;
+import com.chanakinllc.thousandmiles.cards.safeties.PunctureProofCard;
+import com.chanakinllc.thousandmiles.cards.safeties.RightOfWayCard;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,12 +35,7 @@ public class Deck {
     private ArrayList<Card> deck = new ArrayList<Card>();
 
     public Deck() {
-
-        for(CardType type: CardType.values() )
-        {
-            addCardsToDeck(type);
-        }
-
+        instantiate();
         shuffle();
     }
 
@@ -31,17 +45,78 @@ public class Deck {
         shuffle();
     }
 
-    private void addCardsToDeck(CardType type) {
-        for(int i = 0; i < type.getNumCardsPerDeck(); i++) {
-            Class<?> cardClass = type.getClassForCardType();
+    private void instantiate() {
+        //TODO would love to make this cleaner logic
+        Log.i("DECK", "INSTANTIATING CARDS FOR DECK");
 
-            try {
-                if( cardClass.newInstance() instanceof Card) {
-                    deck.add( (Card) cardClass.newInstance() );
+        for(CardType type: CardType.values() )
+        {
+            Log.i("DECK", "NUM CARDS PER TYPE=" + type.getNumCardsPerDeck());
+            for(int i = 0; i < type.getNumCardsPerDeck(); i++) {
+                Card cardForType = null;
+
+                switch(type) {
+
+                    case ACCIDENT:
+                        cardForType = new AccidentCard(null);
+                        break;
+                    case OUT_OF_GAS:
+                        cardForType = new OutOfGasCard(null);
+                        break;
+                    case FLAT_TIRE:
+                        cardForType = new FlatTireCard(null);
+                        break;
+                    case STOP:
+                        cardForType = new StopCard(null);
+                        break;
+                    case SPEED_LIMIT:
+                        cardForType = new SpeedLimitCard(null);
+                        break;
+                    case REPAIRS:
+                        cardForType = new RepairsCard(null);
+                        break;
+                    case GASOLINE:
+                        cardForType = new GasolineCard(null);
+                        break;
+                    case SPARE_TIRE:
+                        cardForType = new SpareTireCard(null);
+                        break;
+                    case ROLL:
+                        cardForType = new RollCard(null);
+                        break;
+                    case END_OF_LIMIT:
+                        cardForType = new EndOfLimitCard(null);
+                        break;
+                    case DRIVING_ACE:
+                        cardForType = new DrivingAceCard(null);
+                        break;
+                    case EXTRA_TANK:
+                        cardForType = new ExtraTankCard(null);
+                        break;
+                    case PUNCTURE_PROOF:
+                        cardForType = new PunctureProofCard(null);
+                        break;
+                    case RIGHT_OF_WAY:
+                        cardForType = new RightOfWayCard(null);
+                        break;
+                    case TWENTY_FIVE_MILES:
+                        cardForType = new TwentyFiveMilesDistanceCard(null);
+                        break;
+                    case FIFTY_MILES:
+                        cardForType = new FiftyMilesDistanceCard(null);
+                        break;
+                    case SEVENTY_FIVE_MILES:
+                        cardForType = new SeventyFiveMilesDistanceCard(null);
+                        break;
+                    case ONE_HUNDRED_MILES:
+                        cardForType = new OneHundredMilesDistanceCard(null);
+                        break;
+                    case TWO_HUNDRED_MILES:
+                        cardForType = new TwoHundredMilesDistanceCard(null);
+                        break;
                 }
-            }
-            catch(Exception iae) {
-                Log.i("Exception", iae.getMessage());
+                deck.add(cardForType);
+                Log.i("DECK", "ADDED CARD=" + cardForType.toString());
             }
         }
     }
@@ -51,8 +126,8 @@ public class Deck {
     }
 
     // Will return up to six cards, pending availability
-    public ArrayList dealHand() {
-        ArrayList<Card> hand = new ArrayList<Card>();
+    public Card [] dealHand() {
+        Card [] hand = new Card [6];
 
         for (int i = 0; i < 6; i++) {
             if( deck.isEmpty() )
@@ -60,9 +135,10 @@ public class Deck {
                 break;
             }
 
-            hand.add(deck.get(i));
+            hand[i] = deck.get(i);
             deck.remove(i);//remove each card that was dealt from the deck
         }
+
         return hand;
     }
 

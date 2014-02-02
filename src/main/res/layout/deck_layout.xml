@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="@android:color/holo_red_dark"
+    android:padding="5dp"
+    android:layout_centerVertical="true"
+    android:layout_marginTop="10dp">
+
+    <RelativeLayout
+        android:id="@+id/discard_pile"
+        style="@style/CardPileArea"
+        android:background="@drawable/deck_holder" />
+
+    <RelativeLayout
+        android:id="@+id/draw_pile"
+        style="@style/CardPileArea"
+        android:layout_marginRight="0dp"
+        android:background="@drawable/deck_holder" >
+
+        <ImageView
+            android:id="@+id/deck"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/hidden_card"/>
+
+    </RelativeLayout>
+
+</LinearLayout>

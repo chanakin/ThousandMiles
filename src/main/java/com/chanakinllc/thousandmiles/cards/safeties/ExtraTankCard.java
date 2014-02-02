@@ -31,6 +31,8 @@ public class ExtraTankCard extends SafetyCard {
         return R.drawable.extra_tank;
     }
 
+    public ExtraTankCard() {}
+
     public ExtraTankCard(Parcel in) {
 
     }

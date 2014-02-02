@@ -24,6 +24,8 @@ public class SpareTireCard extends RemedyCard {
         return R.drawable.spare_tire;
     }
 
+    public SpareTireCard() {}
+
     public SpareTireCard(Parcel in) {
 
     }

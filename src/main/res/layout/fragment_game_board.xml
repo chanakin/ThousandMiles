@@ -16,7 +16,7 @@
         android:orientation="vertical">
 
         <include
-            layout="@layout/hand_layout"
+            layout="@layout/opponent_hand_layout"
             android:id="@+id/opponent_hand"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -31,27 +31,11 @@
             android:layout_below="@+id/opponent_hand" />
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/deck_area"
+    <include layout="@layout/deck_layout"
+        android:id="@id/deck_area"
         android:layout_centerInParent="true"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:background="@android:color/holo_red_dark"
-        android:padding="5dp">
-
-        <ImageView
-            android:id="@+id/discard_pile"
-            style="@style/CardPileArea"
-            android:background="@drawable/deck_holder" />
-
-        <RelativeLayout
-            android:id="@+id/draw_pile"
-            style="@style/CardPileArea"
-            android:layout_marginRight="0dp"
-            android:background="@drawable/deck_holder" />
-
-    </LinearLayout>
+        android:layout_height="wrap_content" />
 
     <LinearLayout
         android:layout_width="match_parent"

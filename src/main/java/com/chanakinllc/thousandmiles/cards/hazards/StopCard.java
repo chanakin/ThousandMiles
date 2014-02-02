@@ -20,6 +20,8 @@ public class StopCard extends HazardCard {
         return R.drawable.stop;
     }
 
+    public StopCard() {}
+
     public StopCard(Parcel in) {
 
     }
