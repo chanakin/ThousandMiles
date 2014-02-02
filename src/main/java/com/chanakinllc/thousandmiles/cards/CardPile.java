@@ -5,9 +5,16 @@ package com.chanakinllc.thousandmiles.cards;
  */
 public enum CardPile {
     SPEED,
-    SAFETY,
+    SAFETY_ONE,
+    SAFETY_TWO,
+    SAFETY_THREE,
+    SAFETY_FOUR,
     BATTLE,
-    DISTANCE,
+    TWENTY_FIVE_DISTANCE,
+    FIFTY_DISTANCE,
+    SEVENTY_FIVE_DISTANCE,
+    ONE_HUNDRED_DISTANCE,
+    TWO_HUNDRED_DISTANCE,
     DISCARD,
     DRAW,
     OPPONENT_SPEED,

@@ -15,11 +15,6 @@ public abstract class SafetyCard extends Card {
     public abstract CardType [] getCardTypesWithSameFunction();
 
     @Override
-    public CardPile getPileType() {
-        return CardPile.SAFETY;
-    }
-
-    @Override
     public CardCategory getCardCategory() {
         return CardCategory.SAFETY;
     }

@@ -10,10 +10,13 @@ import android.app.FragmentTransaction;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Vibrator;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.content.Context;
+import android.widget.Toast;
 
 public class ThousandMilesMainMenu extends FragmentActivity implements GameRulesEngineFragment.GameRulesEngineListener, GameBoardFragment.GameBoardListener {
     private static final String RULES_FRAGMENT = "rulesFragment";
@@ -34,7 +37,8 @@ public class ThousandMilesMainMenu extends FragmentActivity implements GameRules
 
     @Override
     public void requestedCardFromDrawPile() {
-
+        GameRulesEngineFragment rulesEngine = (GameRulesEngineFragment) getSupportFragmentManager().findFragmentByTag(RULES_FRAGMENT);
+        rulesEngine.cardDrawRequested();
     }
 
     @Override
@@ -79,11 +83,24 @@ public class ThousandMilesMainMenu extends FragmentActivity implements GameRules
 
     }
 
-    public void placeDrawnCardInHand(Card card, int slotIndexInHand) {
+    @Override
+    public void placeDrawnCardInHand(Card card, int slotIndexInHand, boolean deckEmptyAfterDraw) {
+        GameBoardFragment board = (GameBoardFragment) getSupportFragmentManager().findFragmentByTag(BOARD_FRAGMENT);
 
+        if( null != board ) {
+            board.placeDrawnCardInHand(card, slotIndexInHand);
+
+            if( deckEmptyAfterDraw ) {
+                board.displayEmptyDeck();
+            }
+        }
     }
 
-    public void maxNumberOfCardsInHandWhenDrawRequested() {
-
+    @Override
+    public void drawRequestDenied(String errorMessage) {
+        Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        v.vibrate(500);
+        Toast.makeText(this, errorMessage, Toast.LENGTH_LONG);
     }
+
 }

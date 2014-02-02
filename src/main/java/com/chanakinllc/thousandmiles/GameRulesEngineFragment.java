@@ -20,8 +20,12 @@ import java.util.ArrayList;
 /**
  * Created by chan on 1/25/14.
  * MODEL for the game -- this is a headless fragment
+ * TODO this may not need to be a fragment, but instead a Parcelable object that
+ * can be saved in onSavedInstance...come back to this
  */
 public class GameRulesEngineFragment extends Fragment {
+    public static final int NO_CARDS_REMAINING_IN_DECK = -2;
+    public static final int EXCEEDED_MAX_NUMBER_OF_CARDS_ALLOWED_IN_HAND = -1;
     private Player currentPlayer;
 
     //Create an object of the deck class
@@ -54,9 +58,9 @@ public class GameRulesEngineFragment extends Fragment {
 
         public void playDeemedInvalid(Card card, CardPile whichPile, int indexOfHandToReturnCard);
 
-        public void placeDrawnCardInHand(Card card, int slotIndexInHand);
+        public void placeDrawnCardInHand(Card card, int slotIndexInHand, boolean deckEmptyAfterDraw);
 
-        public void maxNumberOfCardsInHandWhenDrawRequested();
+        public void drawRequestDenied(String errorMessage);
     }
 
     public static GameRulesEngineFragment newInstance( String playerName ) {
@@ -121,6 +125,7 @@ public class GameRulesEngineFragment extends Fragment {
             for( int i = 0; i < playerNames.length; i++ ) {
                 Player newPlayer = new Player(playerNames[i], i);
                 newPlayer.setHand(deck.dealHand());
+                newPlayer.setHasDrawnCardThisTurn(true);
                 players.add(newPlayer);
                 Log.i("RULES ENGINE", "ADDED NEW PLAYER!");
             }
@@ -282,6 +287,8 @@ public class GameRulesEngineFragment extends Fragment {
     }
 
     private void beginNextPlayersTurn() {
+        currentPlayer.setHasDrawnCardThisTurn(false);
+
         switch( currentPlayer.getUniqueId() ) {
             case 0:
                 currentPlayer = players.get(1); //Computer player, let the computer take their turn.
@@ -325,14 +332,29 @@ public class GameRulesEngineFragment extends Fragment {
     }
 
     public void cardDrawRequested() {
-        int indexOfDrawnCard = drawCard();
-
-        if( indexOfDrawnCard >= 0 ) {
-            listener.placeDrawnCardInHand(currentPlayer.getHand()[indexOfDrawnCard], indexOfDrawnCard);
+        if( currentPlayer != players.get(PLAYER_INDEX) ) {
+            listener.drawRequestDenied(getResources().getString(R.string.not_player_turn_error));
+        }
+        else if( currentPlayer.hasDrawnCardThisTurn()) {
+            listener.drawRequestDenied(getResources().getString(R.string.already_drew_card_this_turn));
         }
         else {
-            listener.maxNumberOfCardsInHandWhenDrawRequested();
+            int indexOfDrawnCard = drawCard();
+
+            switch(indexOfDrawnCard) {
+                case EXCEEDED_MAX_NUMBER_OF_CARDS_ALLOWED_IN_HAND:
+                    listener.drawRequestDenied(getResources().getString(R.string.max_cards_in_hand_error));
+                    break;
+                case NO_CARDS_REMAINING_IN_DECK:
+                    listener.drawRequestDenied(getResources().getString(R.string.deck_empty));
+                    break;
+                default:
+                    listener.placeDrawnCardInHand(currentPlayer.getHand()[indexOfDrawnCard], indexOfDrawnCard, deck.isEmpty());
+                    currentPlayer.setHasDrawnCardThisTurn(true);
+                    break;
+            }
         }
+
     }
 
     /**
@@ -342,16 +364,26 @@ public class GameRulesEngineFragment extends Fragment {
     private int drawCard() {
         Card drawnCard = deck.drawCard();
 
+        if( null == drawnCard ) {
+            return NO_CARDS_REMAINING_IN_DECK;
+        }
+
         Card [] currentPlayerHand = currentPlayer.getHand();
 
-        for( int i = 0; i < currentPlayerHand.length; i++ ) {
+        for( int i = 1; i < currentPlayerHand.length; i++ ) {
+            // First try to avoid 0
             if( currentPlayerHand[i] == null ) {
                 currentPlayerHand[i] = drawnCard;
                 return i;
             }
         }
 
-        return -1;
+        //Only if all other six slots are filled do we want to add to our hand in the zero position
+        if( currentPlayerHand[0] == null ) {
+            return 0;
+        }
+
+        return EXCEEDED_MAX_NUMBER_OF_CARDS_ALLOWED_IN_HAND;
     }
 
     /**

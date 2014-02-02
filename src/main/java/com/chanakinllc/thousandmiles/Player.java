@@ -30,6 +30,8 @@ public class Player {
 
     private int uniqueId;
 
+    private boolean hasDrawnCardThisTurn = false;
+
     public Player(String name, int uniqueId)
     {
         this.name = name;
@@ -125,4 +127,13 @@ public class Player {
     public HashMap<CardType, SafetyCard> getSafetyPile() {
         return safetyPile;
     }
+
+    public boolean hasDrawnCardThisTurn() {
+        return hasDrawnCardThisTurn;
+    }
+
+    public void setHasDrawnCardThisTurn(boolean hasDrawnCardThisTurn) {
+        this.hasDrawnCardThisTurn = hasDrawnCardThisTurn;
+    }
+
 }

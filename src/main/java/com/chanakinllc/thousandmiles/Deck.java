@@ -127,9 +127,9 @@ public class Deck {
 
     // Will return up to six cards, pending availability
     public Card [] dealHand() {
-        Card [] hand = new Card [6];
+        Card [] hand = new Card [7]; //Have to make it 7 since the player can hold 7 at the beginning of a turn, but must end with 6
 
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < 7; i++) {
             if( deck.isEmpty() )
             {
                 break;
@@ -155,4 +155,7 @@ public class Deck {
         return card;
     }
 
+    public boolean isEmpty() {
+        return deck.isEmpty();
+    }
 }

@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.chanakinllc.thousandmiles.R;
+import com.chanakinllc.thousandmiles.cards.CardPile;
 import com.chanakinllc.thousandmiles.cards.CardType;
 
 /**
@@ -14,6 +15,11 @@ public class FiftyMilesDistanceCard extends DistanceCard {
     @Override
     public int getDistance() {
         return 50;
+    }
+
+    @Override
+    public CardPile getPileType() {
+        return CardPile.FIFTY_DISTANCE;
     }
 
     @Override

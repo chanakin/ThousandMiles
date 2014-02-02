@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.chanakinllc.thousandmiles.R;
+import com.chanakinllc.thousandmiles.cards.CardPile;
 import com.chanakinllc.thousandmiles.cards.CardType;
 
 /**
@@ -31,7 +32,11 @@ public class DrivingAceCard extends SafetyCard {
         return R.drawable.driving_ace;
     }
 
-    public DrivingAceCard() {}
+
+    @Override
+    public CardPile getPileType() {
+        return CardPile.SAFETY_ONE;
+    }
 
     public DrivingAceCard(Parcel in) {
 
@@ -44,7 +49,7 @@ public class DrivingAceCard extends SafetyCard {
 
     @Override
     public void writeToParcel(Parcel parcel, int i) {
-
+        return;
     }
 
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {

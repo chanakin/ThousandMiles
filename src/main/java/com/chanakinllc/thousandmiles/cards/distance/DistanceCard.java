@@ -20,11 +20,6 @@ public abstract class DistanceCard extends Card {
     }
 
     @Override
-    public CardPile getPileType() {
-        return CardPile.DISTANCE;
-    }
-
-    @Override
     public CardType[] getCardTypesThatArePlayableOn() {
         return new CardType[] { CardType.RIGHT_OF_WAY, CardType.ROLL };
     }

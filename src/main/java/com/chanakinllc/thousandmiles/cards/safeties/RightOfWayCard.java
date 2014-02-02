@@ -5,6 +5,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.chanakinllc.thousandmiles.R;
+import com.chanakinllc.thousandmiles.cards.CardPile;
 import com.chanakinllc.thousandmiles.cards.CardType;
 
 /**
@@ -25,6 +26,11 @@ public class RightOfWayCard extends SafetyCard {
     @Override
     public CardType[] getCardTypesWithSameFunction() {
         return new CardType[] { CardType.ROLL, CardType.END_OF_LIMIT };
+    }
+
+    @Override
+    public CardPile getPileType() {
+        return CardPile.SAFETY_FOUR;
     }
 
     @Override

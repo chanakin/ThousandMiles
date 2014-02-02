@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.chanakinllc.thousandmiles.R;
+import com.chanakinllc.thousandmiles.cards.CardPile;
 import com.chanakinllc.thousandmiles.cards.CardType;
 
 /**
@@ -24,6 +25,10 @@ public class PunctureProofCard extends SafetyCard {
     public CardType[] getCardTypesWithSameFunction() {
         return new CardType[] { CardType.SPARE_TIRE };
     }
+    @Override
+    public CardPile getPileType() {
+        return CardPile.SAFETY_THREE;
+    }
 
     @Override
     public int getCardImageResourceId() {
@@ -35,6 +40,7 @@ public class PunctureProofCard extends SafetyCard {
     public PunctureProofCard(Parcel in) {
 
     }
+
 
     @Override
     public int describeContents() {

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="not_player_turn_error">Hey grabby hands, it\'s not your turn.</string>
+    <string name="max_cards_in_hand_error">You cannot end a turn with more than six cards in your hand.</string>
+    <string name="already_drew_card_this_turn">You can only draw one card per turn.</string>
+    <string name="deck_empty">There\'s no cards left to draw!</string>
+</resources>
